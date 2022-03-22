@@ -2,31 +2,44 @@ s.boot
 
 (
 SynthDef(\positioner,{
-	arg inBus, outBus, angle = 0, radius = 0;
+	arg inBus=0, outBus=0, angle = 0, radius = 0;
 	var input, output, pan;
 
 	input = In.ar(inBus,1);
-	Out.ar(in,Pan2.ar(input,angle,radius))
-}).add
+	Out.ar(outBus,Pan2.ar(input,angle));
+}).add;
 )
-b = Bus.audio(s,2);
+(
+SynthDef(\impulse,{
+	arg outBus=0;
+	var input, output;
+
+	input = Impulse.ar(1);
+	Out.ar(outBus,input);
+}).add;
+)
+
+
+b = Bus.audio(s,1);
+
+
 (
 
 SynthDef(\roomer,{
-	arg inBus, outBus = 0, dimension=0.5, distance=0.5;
+	arg inBus, outBus = 0, dimension=0.5, distance=1;
 	var input, output, rev;
 
 	input = In.ar(inBus,2);
 	output = FreeVerb2.ar(input[0],input[1],distance,dimension);
+	Out.ar(outBus,output)
 } ).add
 )
-
+var wood;
 (
 {
-	i = Impulse.ar(1);
-
-	//p = Synth.before(i,\positioner,[\inBus,i,\outBus,0]);
-}.play;
+	i = Synth(\impulse,[\outBus,b]);
+	p = Synth.after(i,\positioner,[\inBus,b,\outBus,b,\angle,0.7]);
+	r = Synth.after(p,\roomer,[\inBus,b])
+}.play
 )
-
-
+s.meter(26,26)
