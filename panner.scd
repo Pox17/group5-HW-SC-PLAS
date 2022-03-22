@@ -34,12 +34,17 @@ SynthDef(\roomer,{
 	Out.ar(outBus,output)
 } ).add
 )
-var wood;
+
 (
+r = Routine(
 {
-	i = Synth(\impulse,[\outBus,b]);
-	p = Synth.after(i,\positioner,[\inBus,b,\outBus,b,\angle,0.7]);
-	r = Synth.after(p,\roomer,[\inBus,b])
-}.play
+
+	p = Synth(\positioner,[\inBus,b,\angle,0.7]);
+	i = Synth.before(p,\impulse,[\outBus,b]);
+
+	//r = Synth.after(p,\roomer,[\inBus,b])
+}
+);
 )
+r.play;
 s.meter(26,26)

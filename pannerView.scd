@@ -7,11 +7,11 @@ SynthDef(\positioner,{
 	var input, output, pan;
 
 	input = In.ar(inBus,1);
-	Out.ar(outBus,Pan2.ar(input,angle));
+	Out.ar(outBus,LinPan2.ar(input,angle,radius));
 }).add;
-)
 
-(
+
+
 SynthDef(\impulse,{
 	arg outBus=0;
 	var input, output;
@@ -19,22 +19,21 @@ SynthDef(\impulse,{
 	input = Impulse.ar(1);
 	Out.ar(outBus,input);
 }).add;
+
+
+SynthDef(\roomer,{
+	arg inBus, outBus = 0, dimension=0.5, distance=1;
+	var input, output, rev;
+
+	input = In.ar(inBus,2);
+	output = FreeVerb2.ar(input[0],input[1],distance,dimension);
+	Out.ar(outBus,output)
+} ).add
 )
 
-(
-r = Routine(
-{
-
-		p = Synth(\positioner,[\inBus,b,\angle,~angPos[0,1]]);
-	i = Synth.before(p,\impulse,[\outBus,b]);
-
-	//r = Synth.after(p,\roomer,[\inBus,b])
-}
-);
-)
-r.play;
 
 (
+
 
 var elRadius = 8,
 xStart=1,
@@ -46,10 +45,27 @@ pos1D = Array.fill((numOfPoints*2),{10+(180.rand)}).postln,
 pos=Array2D.fromArray(numOfPoints,2,pos1D).postln,
 centerPosX = width/2,
 centerPosY = height,
+b = Bus.audio(s,1),
+b2 = Bus.audio(s,2),
 selPos = -1;
 ~angPos = Array2D.new(numOfPoints,2);
 w = Window.new("gui",Rect(100,100,(width+(100)),(height+(100)))).front;
 v = UserView(w,Rect(50,50,height+2,width+2));
+
+r = Routine(
+{
+
+	p = Synth(\positioner,[\inBus,b,\angle,~angPos[0,1],\outBus,b2]);
+	i = Synth.before(p,\impulse,[\outBus,b]);
+
+	j = Synth.after(p,\roomer,[\inBus,b2])
+}
+);
+
+r.play;
+
+
+
 
 v.drawFunc = {
 	Pen.fillColor = Color.black;
@@ -112,6 +128,7 @@ v.mouseMoveAction = { arg view, x,y, m;
 	pos[selPos,0] =x;
 	pos[selPos,1] =y;
 		p.set(\angle,~angPos[0,1]);
+		j.set(\distance,~angPos[0,0]);
 	v.refresh;
 
 	}
