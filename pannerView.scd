@@ -9,7 +9,7 @@ SynthDef(\positioner,{
 	input = In.ar(inBus,1)*(1-(radius-0.1));
 	val = input;
 	pan = Pan2.ar(input,angle);
-	effect = pan;//*(radius-0.1);
+	effect = pan*((radius-0.1)*0.5);
 	Out.ar(mainOut,pan);
 	Out.ar(effectOut,effect);
 }).add;
