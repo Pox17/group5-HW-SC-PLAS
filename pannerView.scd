@@ -1,13 +1,17 @@
 
-
+s.boot
 
 (
 SynthDef(\positioner,{
-	arg inBus=0, outBus=0, angle = 0, radius =0 ;
-	var input, output, pan;
+	arg inBus=0, mainOut=[0,1], effectOut=[2,3], angle = 0, radius =0 ;
+	var val, input,effect, output, pan;
 
 	input = In.ar(inBus,1)*(1-(radius-0.1));
-	Out.ar(outBus,LinPan2.ar(input,angle));
+	val = input;
+	pan = Pan2.ar(input,angle);
+	effect = pan;//*(radius-0.1);
+	Out.ar(mainOut,pan);
+	Out.ar(effectOut,effect);
 }).add;
 
 
@@ -22,7 +26,7 @@ SynthDef(\impulse,{
 
 
 SynthDef(\roomer,{
-	arg inBus, outBus = [0,1], dimension=0.5, mix=0.6;
+	arg inBus, outBus = [0,1], dimension=0.7, mix=1.0;
 	var input, output, rev;
 
 	input = In.ar(inBus,2);
@@ -30,8 +34,8 @@ SynthDef(\roomer,{
 	Out.ar(outBus,output)
 } ).add
 )
-(
 
+(
 var b = Bus.audio(s,1);
 var b2 = Bus.audio(s,2);
 var elRadius = 8,
@@ -52,9 +56,9 @@ v = UserView(w,Rect(50,50,height+2,width+2));
 r = Routine(
 {
 
-	p = Synth(\positioner,[\inBus,b,\angle,~angPos[0,1]/*,\outBus,b2*/]);
+		p = Synth(\positioner,[\inBus,b,\angle,~angPos[0,1],\mainOut,[0,1],\effectOut,b2]);
 	i = Synth.before(p,\impulse,[\outBus,b]);
-		j = Synth.after(p,\roomer,[\inBus,[1,0],\outBus,[0,1]]);
+	j = Synth.after(p,\roomer,[\inBus,b2,\outBus,[0,1]]);
 }
 );
 
