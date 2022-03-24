@@ -29,7 +29,7 @@ SynthDef(\wolf, {
 
 	trig = Trig1.ar(LFNoise1.kr(occurence), length+LFNoise1.kr(0.5).range(-1, 0));
 
-	env = EnvGen.kr(Env.adsr(1, 0.5, 1, s2, 0.8, \sin), trig, 1, 0.1);
+	env = EnvGen.kr(Env.adsr(1, 0.5, 1, 2, 0.8, \sin), trig, 1, 0.1);
 	env1 = Env.sine(3.5);
 	envgen1= EnvGen.kr(env1, trig);
 
