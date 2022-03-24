@@ -7,11 +7,11 @@ SynthDef(\positioner,{
 	arg inBus=0, mainOut=[0,1], effectOut=[2,3], angle = 0, radius =0 ;
 	var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
 
-	efGain = radius; //(((radius+0.5).log10)+0.1)*0.8;
-	inGain = 1-radius;//1.1-((radius+0.15).log10);
+	efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
+	inGain = (1-(0.95*radius));//1-radius;//1.1-((radius+0.15).log10);
 	input = In.ar(inBus,1); //(1-(radius-0.1));
 	val = input*inGain;
-	valEf = input*efGain //*(efGain)*(inGain+0.1);
+	valEf = input*efGain; //*(efGain)*(inGain+0.1);
 	panMain = Pan2.ar(val,angle);
 	panEf = Pan2.ar(valEf,angle);
 	Out.ar(mainOut,panMain);
