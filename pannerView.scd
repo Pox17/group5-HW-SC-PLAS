@@ -1,7 +1,11 @@
 
 s.boot;
 
-
+(
+~samplePath;
+~samplePath= thisProcess.nowExecutingPath.dirname +/+ "buffer/1.wav";
+~a = Buffer.readChannel(s,~samplePath,channels:[0]);
+)
 (
 SynthDef(\positioner,{
 	arg inBus=0, mainOut=[0,1], effectOut=[2,3], angle = 0, radius =0 ;
@@ -18,6 +22,20 @@ SynthDef(\positioner,{
 	Out.ar(effectOut,panEf);
 }).add;
 
+SynthDef(\PassettiNeve, {
+	arg out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1;
+    var center,sig2,hpf,verb,shf,lpf, sig;
+
+	sig2 = GrainBuf.ar(1,Impulse.ar(speed),0.4,~a,1,0.34,2,0);
+	sig = sig2 * BrownNoise.ar(1,0);
+	verb = FreeVerb.ar(sig,0.2);
+	shf = PitchShift.ar(verb,0.2,0.2);
+	center = Pan2.ar(shf,0,1);
+	hpf = HPF.ar(center,hpfreq);
+	lpf = LPF.ar(hpf,6000)*20;
+    Out.ar(out,
+		lpf)
+}).add;
 
 
 SynthDef(\impulse,{
@@ -30,11 +48,12 @@ SynthDef(\impulse,{
 
 
 SynthDef(\roomer,{
-	arg inBus, outBus = [0,1], dimension=0.7, mix=1.0;
+	arg inBus, outBus = [0,1], dimension=0.2, mix=1.0;
 	var input, output, rev;
 
 	input = In.ar(inBus,2);
-	output = FreeVerb2.ar(input[0],input[1],mix,dimension);
+	output = //FreeVerb2.ar(input[0],input[1],mix,dimension);
+GVerb.ar(in, roomsize: 10, revtime: 3, damping: 0.5, inputbw: 0.5, spread: 15, drylevel: 1, earlyreflevel: 0.7, taillevel: 0.5, maxroomsize: 300, mul: 1, add: 0)
 	Out.ar(outBus,output)
 } ).add
 )
@@ -61,11 +80,11 @@ r = Routine(
 {
 
 	p = Synth(\positioner,[\inBus,b,\angle,~angPos[0,1],\mainOut,[0,1],\effectOut,b2]);
-	i = Synth.before(p,\impulse,[\outBus,b]);
+	i = Synth(\PassettiNeve,[\out,b]);//Synth.before(p,\impulse,[\outBus,b]);
 	j = Synth.after(p,\roomer,[\inBus,b2,\outBus,[0,1]]);
 }
 );
-
+//i = Synth(\PassettiNeve,[]);
 r.play;
 
 
