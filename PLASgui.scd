@@ -1,21 +1,20 @@
-s.boot
+s.boot;
 
-(
+~scopefire;
+~scopewolf;
+~scopefrog;
+~scopestep;
 
-SynthDef(\oscprova,{
-	arg freq = 440, amp=0.1;
-	var sig;
-	sig = SinOsc.ar(freq,0,amp);
-	Out.ar(0,sig);
-}).add;
-s = Synth(\oscprova);
-)
 
 (
 
 //VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 var f,wp,w1,w2,w3,w4,i1,i2,i3,i4,
+
+bufFire,bufFrog,bufStep,bufWolf,
+
+scopingSynth,image,
 
 // margin
 
@@ -29,8 +28,8 @@ winUpDown = 50,
 winRL = 900,
 
 panWinRL = 900,
-panWinUpDown = 100,
-panWinWidth = 300,
+panWinUpDown = 750,
+panWinWidth = 600,
 panWinHeight = 300,
 
 // single section dimensions
@@ -43,16 +42,16 @@ titleWidth = 80,
 titleHeight = 20,
 
 //knob dimension
-knobDim = 30,
-knobIntraDist = 10,
+knobDim = 50,
+knobIntraDist = 13,
 
 knobLabelWidth = knobDim,
-knobLabelHeight = 10,
+knobLabelHeight = 15,
 
 //numberbox dimension
 
 numBoxWidth = knobDim,
-numBoxHeight = 20;
+numBoxHeight = 15;
 
 
 // panner variables
@@ -71,13 +70,16 @@ selPos = -1;
 
 //WINDOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-//i1 = Image.new("C:/Users/Alberto/Desktop/wolf_1f43a.png"	);
+image = Image.new("C:/Users/Alberto/Desktop/fire-icon-3-product (3).png");
+i1 = Image.new(	"C:/Users/Alberto/Desktop/Fire_crop.png");
+i2 = Image.new(	"C:/Users/Alberto/Desktop/Wolf_crop.png");
+i3 = Image.new(	"C:/Users/Alberto/Desktop/Shrek_crop.png");
+i4 = Image.new(	"C:/Users/Alberto/Desktop/Walk_crop.png");
 
 
 Window.closeAll;
 
 // main
-
 w = Window.new("PLASgui",Rect(winRL,winUpDown,winWidth,winHeight), false)
 .front
 .alwaysOnTop_(true)
@@ -85,16 +87,59 @@ w = Window.new("PLASgui",Rect(winRL,winUpDown,winWidth,winHeight), false)
 .drawFunc = {
 
     Pen.addRect(w.view.bounds.insetBy(0));
-	Pen.fillAxialGradient(w.view.bounds.leftTop, w.view.bounds.rightBottom, Color.new255(255,255,255), Color.new255(135,206,250));
-	//i1.tileInRect(Rect(marg,marg,sectWinWidth,sectWinHeight),nil,2,0.8);
-	//i2.tileInRect(Rect(marg,(2*marg)+sectWinHeight,sectWinWidth,sectWinHeight),nil,2,1.0);
-	//i3.tileInRect(Rect(marg,(3*marg)+(2*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,1.0);
-	//i4.tileInRect(Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,1.0);
+	Pen.fillAxialGradient(w.view.bounds.leftTop, w.view.bounds.rightBottom, Color.fromHexString("#05668d"), Color.fromHexString("#028090"));
+
+
+	Pen.addRect(Rect(marg,marg,sectWinWidth,sectWinHeight))
+	.width_(5)
+	//.fillColor_(Color.black)
+	//.fill
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
+
+	Pen.addRect(Rect(marg,(2*marg)+sectWinHeight,sectWinWidth,sectWinHeight))
+	.width_(5)
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
+
+	Pen.addRect(Rect(marg,(3*marg)+(2*sectWinHeight),sectWinWidth,sectWinHeight))
+	.width_(5)
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
+
+	Pen.addRect(Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight))
+	.width_(5)
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
+
+	//i1.tileInRect(Rect(marg,marg,sectWinWidth,sectWinHeight),nil,2,0.5);
+	//i2.tileInRect(Rect(marg,(2*marg)+sectWinHeight,sectWinWidth,sectWinHeight),nil,2,0.8);
+	//i3.tileInRect(Rect(marg,(3*marg)+(2*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,0.8);
+	//i4.tileInRect(Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,0.8);
+
+	Pen.addRect(Rect(300,60, 150, 60))
+	.width_(8)
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
+
+	Pen.addRect(Rect(300,216, 150, 60))
+	.width_(8)
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
+
+	Pen.addRect(Rect(300,373, 150, 60))
+	.width_(8)
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
+
+	Pen.addRect(Rect(300,529, 150, 60))
+	.width_(8)
+	.strokeColor_(Color.fromHexString("#78cdd7"))
+	.stroke;
 
 };
-//.acceptsMouseOver=true;
 
-//panner
+//panner---------------------------------------------------------------------------
 
 wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
 .front
@@ -102,14 +147,13 @@ wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight),
 //.background_(Color.rand)
 .drawFunc = {
     Pen.addRect(wp.view.bounds.insetBy(0))
-	.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),50,400,
-		Color.new255(0,0,102), Color.new255(135,206,250))
+	.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
+		Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
 	.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
 	.color_(Color.white)
     .fill;
 	//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
 };
-
 
 
 ~angPos = Array2D.new(numOfPoints,2);
@@ -126,7 +170,8 @@ v.drawFunc = {
 		Pen.fillColor = Color.black;
 		Pen.strokeColor = Color.white;
 		"CIAO1".postln;
-		Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
+		//Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
+		Pen.drawImage( (pos.at(i,0)-17)@(pos.at(i,1)-17), image, operation: 'sourceOver', opacity:1);
 		"CIAO2".postln;
 		angle = ((pos[i,0]-centerPosX)/(pos[i,1]-centerPosY).abs).atan;
 		angle01 = angle/(pi/2);
@@ -179,484 +224,428 @@ v.mouseMoveAction = { arg view, x,y, m;
 
 // sections----------------------------------------------------
 
-w1 = CompositeView(w,Rect(marg,marg,sectWinWidth,sectWinHeight))
-.background_(Color.new255(30,144,255));
+w1 = CompositeView(w,Rect(marg,marg,sectWinWidth,sectWinHeight));
+//.background_(Color.new255(30,144,255));
 
-w2 = CompositeView(w,Rect(marg,(2*marg)+sectWinHeight,sectWinWidth,sectWinHeight))
-.background_(Color.new255(30,144,255));
+w2 = CompositeView(w,Rect(marg,(2*marg)+sectWinHeight,sectWinWidth,sectWinHeight));
+//.background_(Color.new255(30,144,255));
 
-w3 = CompositeView(w,Rect(marg,(3*marg)+(2*sectWinHeight),sectWinWidth,sectWinHeight))
-.background_(Color.new255(30,144,255));
+w3 = CompositeView(w,Rect(marg,(3*marg)+(2*sectWinHeight),sectWinWidth,sectWinHeight));
+//.background_(Color.new255(30,144,255));
 
-w4 = CompositeView(w,Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight))
-.background_(Color.new255(30,144,255));
+w4 = CompositeView(w,Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight));
+//.background_(Color.new255(30,144,255));
+
+
+//scope%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+bufFire = Buffer.alloc(s, 1024, 1);
+~scopefire = ScopeView(w1, Rect(275,35, 150, 60)).resize_(5).style_(0).fill_(false).waveColors = [Color.fromHexString("#78cdd7"), Color.green];
+~scopefire.bufnum = bufFire.bufnum;
+~scopefire.server_(s);
+~scopefire.start;
+
+bufWolf = Buffer.alloc(s, 1024, 1);
+~scopewolf = ScopeView(w2, Rect(275,35, 150, 60)).resize_(5).style_(0).fill_(false).waveColors = [Color.fromHexString("#78cdd7"), Color.green];
+~scopewolf.bufnum = bufWolf.bufnum;
+~scopewolf.server_(s);
+~scopewolf.start;
+
+bufFrog = Buffer.alloc(s, 1024, 1);
+~scopefrog = ScopeView(w3, Rect(275,35, 150, 60)).resize_(5).style_(0).fill_(false).waveColors = [Color.fromHexString("#78cdd7"), Color.green];
+~scopefrog.bufnum = bufFrog.bufnum;
+~scopefrog.server_(s);
+~scopefrog.start;
+
+bufStep = Buffer.alloc(s, 1024, 1);
+~scopestep = ScopeView(w4, Rect(275,35, 150, 60)).resize_(5).style_(0).fill_(false).waveColors = [Color.fromHexString("#78cdd7"), Color.green];
+~scopestep.bufnum = bufStep.bufnum;
+~scopestep.server_(s);
+~scopestep.start;
+
+
+SynthDef(\scoping,{
+	arg bus, buffy;
+	ScopeOut2.ar(In.ar(bus,1), buffy);
+	Out.ar(0,In.ar(bus,1));
+}).add;
+
+SynthDef(\s1, {arg bus;
+	           Out.ar(bus, SinOsc.ar(100,0.0,0.5))
+
+}).add;
 
 // LABEL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-//title labels----------------------------------------------------
-
-~label= StaticText(w, Rect((winWidth/2)-(200/2),15,200,titleHeight))
-.string_("plas  granular  synth")
+~labeltitle = StaticText(w, Rect((winWidth/2)-(200/2),15,200,titleHeight))
+.string_("Plas Granular Synth")
 .align_(\center)
-.font_(Font("BigNoodleTitling", 25).boldVariant)
+.font_(Font("Eras Bold ITC"/*"Cooper Black""Eras Bold ITC""Harlow Solid Italic""Matura MT Script Capitals""Swis721 BlkEx BT"*/, 15).boldVariant)
+.stringColor_(Color.black)
 .background_(Color.white);
 
-~label1= StaticText(w1, Rect(20,0,titleWidth,titleHeight))
-.string_("fuoco")
+//FIRE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~labelFire = StaticText(w1, Rect(20,0,titleWidth,titleHeight))
+.string_("fire")
 .align_(\center)
-.font_(Font("BigNoodleTitling", 18).boldVariant)
+.font_(Font("Eras Bold ITC", 18).boldVariant)
 .background_(Color.white);
 
-~label2= StaticText(w2, Rect(20,0,titleWidth,titleHeight))
-.string_("lupo")
+~knobLabelWood= StaticText(w1, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("wood")
 .align_(\center)
-.font_(Font("BigNoodleTitling", 18).boldVariant)
-.background_(Color.white);
-
-~label3= StaticText(w3, Rect(20,0,titleWidth,titleHeight))
-.string_("grilli/rane")
-.align_(\center)
-.font_(Font("BigNoodleTitling", 18).boldVariant)
-.background_(Color.white);
-
-~label4= StaticText(w4
-	, Rect(20,0,titleWidth,titleHeight))
-.string_("passi")
-.align_(\center)
-.font_(Font("BigNoodleTitling", 18).boldVariant)
-.background_(Color.white);
-//knob label section1 --------------------------------------------------
-
-~knobLabelA= StaticText(w1, Rect(5*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("A")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
 //.background_(Color.rand);
 
-~knobLabelD= StaticText(w1, Rect(10*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("D")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
+~knobWood = Knob(w1, Rect(3*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg wood;
+	~numberboxWood.value_(wood.value.linlin(0,1,50,100));
+});
 
-~knobLabelS= StaticText(w1, Rect(15*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("S")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelST= StaticText(w1, Rect(20*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("ST")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelR= StaticText(w1, Rect(25*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("R")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelPan= StaticText(w1, Rect(55*knobIntraDist,0.5*marg,knobLabelWidth,20))
-.string_("PAN")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelDist= StaticText(w1, Rect(55*knobIntraDist,2.7*marg,knobLabelWidth,20))
-.string_("DIST")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelVol= StaticText(w1, Rect(61*knobIntraDist,0.2*marg,2*knobDim,20))
-.string_("VOL")
-.align_(\center)
-.font_(Font("arial", 15).boldVariant);
-//.background_(Color.rand);
-
-
-//knob label section2 -----------------------------------------------------
-
-~knobLabelA= StaticText(w2, Rect(5*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("A")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelD= StaticText(w2, Rect(10*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("D")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelS= StaticText(w2, Rect(15*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("S")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelST= StaticText(w2, Rect(20*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("ST")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelR= StaticText(w2, Rect(25*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("R")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-
-//knob label section3 ----------------------------------------------------
-
-~knobLabelA= StaticText(w3, Rect(5*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("A")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelD= StaticText(w3, Rect(10*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("D")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelS= StaticText(w3, Rect(15*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("S")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelST= StaticText(w3, Rect(20*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("ST")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelR= StaticText(w3, Rect(25*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("R")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-//knob label section4 ----------------------------------------------------
-
-~knobLabelA= StaticText(w4, Rect(5*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("A")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelD= StaticText(w4, Rect(10*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("D")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelS= StaticText(w4, Rect(15*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("S")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelST= StaticText(w4, Rect(20*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("ST")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-~knobLabelR= StaticText(w4, Rect(25*knobIntraDist,1.5*marg,knobLabelWidth,20))
-.string_("R")
-.align_(\center)
-.font_(Font("arial", 13).boldVariant);
-//.background_(Color.rand);
-
-//NUMBERBOX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-
-//numberbox section1-----------------------------------------------
-
-~numberboxA = NumberBox(w1, Rect(5*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
+~numberboxWood = NumberBox(w1, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 //.value_(0)
 .align_(\center)
 .action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
+	arg wood;
+    ~knobWood.valueAction_(wood.value.linlin(50,100,0,1));
 });
 
-~numberboxD = NumberBox(w1, Rect(10*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+~knobLabelPanFire= StaticText(w1, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("right-left")
 .align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
 
-~numberboxS = NumberBox(w1, Rect(15*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+~knobPanFire = Knob(w1, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
+//.action
+
+~knobLabelDistFire= StaticText(w1, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("distance")
 .align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
 
-~numberboxST = NumberBox(w1, Rect(20*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxR = NumberBox(w1, Rect(25*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-//numberbox section2---------------------------------------------
-
-~numberboxA = NumberBox(w2, Rect(5*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxD = NumberBox(w2, Rect(10*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxS = NumberBox(w2, Rect(15*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxST = NumberBox(w2, Rect(20*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxR = NumberBox(w2, Rect(25*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-//numberbox section3----------------------------------------------
-
-~numberboxA = NumberBox(w3, Rect(5*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxD = NumberBox(w3, Rect(10*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxS = NumberBox(w3, Rect(15*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxST = NumberBox(w3, Rect(20*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxR = NumberBox(w3, Rect(25*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-//numberbox section4----------------------------------------------
-
-~numberboxA = NumberBox(w4, Rect(5*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxD = NumberBox(w4, Rect(10*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxS = NumberBox(w4, Rect(15*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxST = NumberBox(w4, Rect(20*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-~numberboxR = NumberBox(w4, Rect(25*knobIntraDist,(2*knobIntraDist)+knobDim+(2*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
-.align_(\center)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-
-//KNOB %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-//knob section 1--------------------------------------------------
-
-~knobA = Knob(w1, Rect(5*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
+~knobDistFire = Knob(w1, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
 //.action
 
-~knobD = Knob(w1, Rect(10*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobS = Knob(w1, Rect(15*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobST = Knob(w1, Rect(20*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobR = Knob(w1, Rect(25*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobPan = Knob(w1, Rect(55*knobIntraDist,1.4*marg,knobDim,knobDim))
-.background_(Color.blue)
-.action_({
-
-});
-
-
-~knobDist = Knob(w1, Rect(55*knobIntraDist,3.5*marg,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobVol = Knob(w1, Rect(61*knobIntraDist,27,2*knobDim,2*knobDim))
-.background_(Color.blue);
-//.action
-//knob section 2------------------------------------------------------
-
-~knobA = Knob(w2, Rect(5*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobD = Knob(w2, Rect(10*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobS = Knob(w2, Rect(15*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobST = Knob(w2, Rect(20*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobR = Knob(w2, Rect(25*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-//knob section 3------------------------------------------------------
-
-~knobA = Knob(w3, Rect(5*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobD = Knob(w3, Rect(10*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobS = Knob(w3, Rect(15*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobST = Knob(w3, Rect(20*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobR = Knob(w3, Rect(25*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-//knob section 4------------------------------------------------------
-
-~knobA = Knob(w4, Rect(5*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobD = Knob(w4, Rect(10*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobS = Knob(w4, Rect(15*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobST = Knob(w4, Rect(20*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-~knobR = Knob(w4, Rect(25*knobIntraDist,65,knobDim,knobDim))
-.background_(Color.blue);
-//.action
-
-
-//BUTTON %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-//section1---------------------------------------------------
-Button.new(w1, Rect(61*knobIntraDist,3.7*marg,2.5*knobDim,30))
+Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 .states_([
-    ["PLAY⏵", Color.white, Color.green(0.7)],
-    ["STOP⏹",Color.white, Color.red(0.7)]
+    ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
+    ["STOP",Color.white, Color.red(0.5)]
 ]).action_({ |b| QtGUI.palette = if(b.value == 0) });
 
+
+//WOLF%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~labelWolf = StaticText(w2, Rect(20,0,titleWidth,titleHeight))
+.string_("Wolf")
+.align_(\center)
+.font_(Font("Eras Bold ITC", 18).boldVariant)
+.background_(Color.white);
+
+~knobLabelLenght= StaticText(w2, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("lenght")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobLenght = Knob(w2, Rect(3*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg lenght;
+	~numberboxLenght.value_(lenght.value.linlin(0,1,50,100));
+});
+
+~numberboxLenght = NumberBox(w2, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg lenght;
+    ~knobLenght.valueAction_(lenght.value.linlin(50,100,0,1));
+});
+
+~knobLabelGrain= StaticText(w2, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("grain")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobGrain = Knob(w2, Rect(8*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg grain;
+	~numberboxGrain.value_(grain.value.linlin(0,1,50,100));
+});
+
+~numberboxGrain = NumberBox(w2, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg grain;
+    ~knobGrain.valueAction_(grain.value.linlin(50,100,0,1));
+});
+
+~knobLabelOcc = StaticText(w2, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
+.string_("occurrance")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobOcc = Knob(w2, Rect(13*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg occ;
+	~numberboxOcc.value_(occ.value.linlin(0,1,50,100));
+});
+
+~numberboxOcc = NumberBox(w2, Rect(13*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg occ;
+    ~knobOcc.valueAction_(occ.value.linlin(50,100,0,1));
+});
+
+~knobLabelPanWolf= StaticText(w2, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("right-left")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobPanWolf = Knob(w2, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
+//.action
+
+~knobLabelDistWolf= StaticText(w2, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("distance")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobDistWolf = Knob(w2, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
+//.action
+
+Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
+.states_([
+    ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
+    ["STOP",Color.white, Color.red(0.5)]
+]).action_({ |b| QtGUI.palette = if(b.value == 0) });
+
+
+
+//FROG%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~labelFrog = StaticText(w3, Rect(20,0,titleWidth,titleHeight))
+.string_("Frog")
+.align_(\center)
+.font_(Font("Eras Bold ITC", 18).boldVariant)
+.background_(Color.white);
+
+~knobLabel= StaticText(w3, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("boh1")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knob = Knob(w3, Rect(3*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg boh1;
+	~numberbox.value_(boh1.value.linlin(0,1,50,100));
+});
+
+~numberbox = NumberBox(w3, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg boh1;
+    ~knob.valueAction_(boh1.value.linlin(50,100,0,1));
+});
+
+~knobLabel= StaticText(w3, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("boh2")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knob = Knob(w3, Rect(8*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg boh2;
+	~numberbox.value_(boh2.value.linlin(0,1,50,100));
+});
+
+~numberbox = NumberBox(w3, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg boh2;
+    ~knob.valueAction_(boh2.value.linlin(50,100,0,1));
+});
+
+~knobLabel = StaticText(w3, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
+.string_("boh3")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knob = Knob(w3, Rect(13*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg boh3;
+	~numberbox.value_(boh3.value.linlin(0,1,50,100));
+});
+
+~numberbox = NumberBox(w3, Rect(13*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg boh3;
+    ~knob.valueAction_(boh3.value.linlin(50,100,0,1));
+});
+
+~knobLabelPanFrog= StaticText(w3, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("right-left")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobPanFrog = Knob(w3, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
+//.action
+
+~knobLabelDistFrog= StaticText(w3, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("distance")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobDistFrog = Knob(w3, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
+//.action
+
+Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
+.states_([
+    ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
+    ["STOP",Color.white, Color.red(0.5)]
+]).action_({ |b| QtGUI.palette = if(b.value == 0) });
+
+
+//STEP%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~labelStep = StaticText(w4, Rect(20,0,titleWidth,titleHeight))
+.string_("Step")
+.align_(\center)
+.font_(Font("Eras Bold ITC", 18).boldVariant)
+.background_(Color.white);
+
+~knobLabelSpeed= StaticText(w4, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("Speed")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobSpeed = Knob(w4, Rect(3*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg speed;
+	~numberboxSpeed.value_(speed.value.linlin(0,1,50,100));
+});
+
+~numberboxSpeed = NumberBox(w4, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg speed;
+    ~knobSpeed.valueAction_(speed.value.linlin(50,100,0,1));
+});
+
+~knobLabelSnowy= StaticText(w4, Rect(7*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
+.string_("Snow/Dirt")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobSnowy = Knob(w4, Rect(8*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"))
+.action_({
+	arg snowy;
+	~numberboxSnowy.value_(snowy.value.linlin(0,1,50,100));
+});
+
+~numberboxSnowy = NumberBox(w4, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+//.value_(0)
+.align_(\center)
+.action_({
+	arg snowy;
+    ~knobSnowy.valueAction_(snowy.value.linlin(50,100,0,1));
+});
+
+
+~knobLabelPanStep= StaticText(w4, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("right-left")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobPanStep = Knob(w4, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
+//.action
+
+~knobLabelDistStep= StaticText(w4, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("distance")
+.align_(\center)
+.font_(Font("arial", 12).boldVariant)
+.stringColor_(Color.white);
+//.background_(Color.rand);
+
+~knobDistStep = Knob(w4, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.background_(Color.fromHexString("#78cdd7"));
+//.action
+
+Button.new(w4, Rect(48*knobIntraDist,40,60,knobDim))
+.states_([
+    ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
+    ["STOP",Color.white, Color.red(0.5)]
+]).action_({ |b| QtGUI.palette = if(b.value == 0) });
+
+
+/*
+f = SoundFile.new;
+f.openRead("C:/Users/Alberto/Documents/università/MAGISTRALE/corsi/CM-LANGUAGE AND SYSTEMS/progetto/group5-HW-SC-PLAS/1.wav");
+~soundview = SoundFileView(w1, Rect(350,30, 150, 90))
+.soundfile = f;
+
+~soundview.read()
+.timeCursorOn_(false)
+.timeCursorColor_(Color.red)
+.timeCursorPosition_(2050)
+.drawsWaveForm_(true)
+.gridOn_(false)
+.gridResolution = 0.01;
+*/
 //SLIDER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*
@@ -680,36 +669,9 @@ Button.new(w1, Rect(61*knobIntraDist,3.7*marg,2.5*knobDim,30))
 .action_({
 
 });
-*/
-
-/*
-//KNOB ------------------------------------
-
-~knob = Knob(w, Rect(250,50,knobdim,knobdim))
-.background_(Color.green);
-//.action
 
 */
 
-//NUMBERBOX -------------------------------
-
-/*
-~numberbox = NumberBox(w, Rect(200,50,50,50))
-.value_(100)
-.action_({
-	arg x;
-    ~slider.valueAction_(x.value.explin(50,1000,0,1));
-});
-*/
-
-//LABEL--------
-
-/*
-~label= StaticText(w, Rect(250,120,50,20))
-.string_("knob1")
-.background_(Color.rand);
-
-*/
 //ALTRO-----------------------
 
 /*
@@ -741,151 +703,11 @@ Button.new(w1, Rect(61*knobIntraDist,3.7*marg,2.5*knobDim,30))
 //.gridOn = true;
 //.gridResolution = 0.2;
 
+{Synth(\scoping, [\buffy, bufFire.bufnum, \bus, 5])}.defer(0.1);
+{Synth(\scoping, [\buffy, bufWolf.bufnum, \bus, 5])}.defer(0.1);
+{Synth(\scoping, [\buffy, bufFrog.bufnum, \bus, 5])}.defer(0.1);
+{Synth(\scoping, [\buffy, bufStep.bufnum, \bus, 5])}.defer(0.1);
 
-)
+{h = Synth(\s1, [\bus, 5])}.defer(0.2);
 
-/*(
-var knobdim = 60;
-
-Window.closeAll;
-w = Window("nested",Rect(500,100,1060,570))
-.front
-.alwaysOnTop_(true);
-
-w.view.decorator_(FlowLayout(w.bounds,30@30, 30@30));
-
-	c= Array.fill(3,{
-		arg view;
-	    view = CompositeView(w,1000@150)
-		.background_(Color.rand);
-
-		view.decorator_(FlowLayout(view.bounds, 15@15, 25@15
-	));
-	});
-Array.fill([1, 9],{
-	~knob = Knob(c[0], knobdim@knobdim)
-	.background_(Color.green);
-	//.action
-},
-{~label= StaticText(w, Rect(250,120,50,20))
-.string_("knob1")
-.background_(Color.rand);});
-Array.fill(9,{
-	~knob = Knob(c[1], knobdim@knobdim)
-	.background_(Color.green);
-	//.action
-});
-Array.fill(9,{
-	~knob = Knob(c[2], knobdim@knobdim)
-	.background_(Color.green);
-	//.action
-});
-
-)
-//KNOBS
-
-knob1 = EZKnob(parent:w, bounds:Rect(10,10,100,100), label:"1", controlSpec:g, initVal:0.5);
-
-knob1.action_({
-	// specify later
-	x.set(\mix, knob1.value);
-});
-
-knob2 = EZKnob(parent:w, bounds:Rect(150,10,100,100), label:"2", controlSpec:g, initVal:0.5);
-
-knob2.action_({
-	// specify later
-	x.set(\mix, knob2.value);
-});
-
-knob3 = EZKnob(parent:w, bounds:Rect(300,10,100,100), label:"3", controlSpec:g, initVal:0.5);
-
-knob3.action_({
-	// specify later
-	x.set(\mix, knob3.value);});
-
-knob4 = EZKnob(parent:w, bounds:Rect(450,10,100,100), label:"4", controlSpec:g, initVal:0.5);
-
-knob4.action_({
-	// specify later
-	x.set(\mix, knob4.value);
-});
-
-//KNOBS ENVELOPE
-
-knobA = EZKnob(parent:w, bounds:Rect(600,10,100,100), label:"A", controlSpec:g, initVal:0.5);
-
-knobA.action_({
-	// specify later
-	x.set(\mix, knobA.value);
-});
-
-knobD = EZKnob(parent:w, bounds:Rect(750,10,100,100), label:"D", controlSpec:g, initVal:0.5);
-
-knobD.action_({
-	// specify later
-	x.set(\mix, knobD.value);
-});
-
-knobS = EZKnob(parent:w, bounds:Rect(900,10,100,100), label:"S", controlSpec:g, initVal:0.5);
-
-knobS.action_({
-	// specify later
-	x.set(\mix, knobS.value);
-});
-
-knobST = EZKnob(parent:w, bounds:Rect(450,10,100,100), label:"ST", controlSpec:g, initVal:0.5);
-
-knob4.action_({
-	// specify later
-	x.set(\mix, knobST.value);
-});
-
-knobR = EZKnob(parent:w, bounds:Rect(300,10,100,100), label:"S", controlSpec:g, initVal:0.5);
-
-knobR.action_({
-	// specify later
-	x.set(\mix, knobR.value);
-});
-
-
-
-
-
-/*
-x = QPalette.auto(Color.red(0.8), Color.red(0.5));
-y = QPalette.auto(Color.cyan(1.4), Color.cyan(1.8));
-p = QtGUI.palette;
-QtGUI.palette = x;
-w = Window.new("GUI Introduction").front;
-w.onClose = {QtGUI.palette = p};
-Button.new(w, Rect(10,10,100,30)).states_([
-    ["Red", Color.black, Color.grey(0.7)],
-    ["Cyan"]
-]).action_({ |b| QtGUI.palette = if(b.value == 0){x}{y} });
-ListView.new(w, Rect(10,50,200,100))
-    .items_(["One","Two","Three"])
-    .colors_([Color.grey(0.4),Color.grey(0.5),Color.grey(0.6)]);
-Slider(w, Rect(10, 160, 200, 20));
-RangeSlider(w, Rect(10, 190, 200, 20));
-
-w = Window.new("GUI Introduction",Rect(200,200,200,70)).front;
-a = [Font.defaultMonoFace, Font.defaultSansFace, Font.defaultSerifFace];
-b = Button.new(w,Rect(10,10,180,50))
-    .states_([["Monospace"],["Sans serif"],["Serif"]])
-    .font_(a[0])
-    .action_({|b| b.font = a[b.value]});
-
-
-w = Window.new(bounds:Rect(200,200,200,50)).front;
-b = Button.new(w,Rect(10,10,80,30)).states_([["Off"],["On"]]);
-t = StaticText(w,Rect(100,10,90,30)).string_("Button released");
-b.mouseDownAction = { t.string = "Button pressed" };
-b.mouseUpAction = { t.string = "Button released" };
-w.front;
-
-*/
-
-
-w.front;
 )
