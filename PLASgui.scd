@@ -4,7 +4,7 @@ s.boot;
 ~scopewolf;
 ~scopefrog;
 ~scopestep;
-
+~colors=[Color.fromHexString("#78cdd7"),Color.white,Color.fromHexString("#78cdd7"),Color.black];
 
 (
 
@@ -16,6 +16,7 @@ bufFire,bufFrog,bufStep,bufWolf,
 
 scopingSynth,image,
 
+background,
 // margin
 
 marg = 25,
@@ -75,6 +76,9 @@ i1 = Image.new(	"C:/Users/Alberto/Desktop/Fire_crop.png");
 i2 = Image.new(	"C:/Users/Alberto/Desktop/Wolf_crop.png");
 i3 = Image.new(	"C:/Users/Alberto/Desktop/Shrek_crop.png");
 i4 = Image.new(	"C:/Users/Alberto/Desktop/Walk_crop.png");
+~background = false;
+
+
 
 
 Window.closeAll;
@@ -112,10 +116,14 @@ w = Window.new("PLASgui",Rect(winRL,winUpDown,winWidth,winHeight), false)
 	.strokeColor_(Color.fromHexString("#78cdd7"))
 	.stroke;
 
-	//i1.tileInRect(Rect(marg,marg,sectWinWidth,sectWinHeight),nil,2,0.5);
-	//i2.tileInRect(Rect(marg,(2*marg)+sectWinHeight,sectWinWidth,sectWinHeight),nil,2,0.8);
-	//i3.tileInRect(Rect(marg,(3*marg)+(2*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,0.8);
-	//i4.tileInRect(Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,0.8);
+	if(~background == true,{
+		i1.tileInRect(Rect(marg,marg,sectWinWidth,sectWinHeight),nil,2,1.0);
+		i2.tileInRect(Rect(marg,(2*marg)+sectWinHeight,sectWinWidth,sectWinHeight),nil,2,0.7);
+		i3.tileInRect(Rect(marg,(3*marg)+(2*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,1.0);
+		i4.tileInRect(Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight),nil,2,1.0);
+	},
+	{});
+
 
 	Pen.addRect(Rect(300,60, 150, 60))
 	.width_(8)
@@ -139,6 +147,19 @@ w = Window.new("PLASgui",Rect(winRL,winUpDown,winWidth,winHeight), false)
 
 };
 
+
+Button.new(w, Rect(5,5,15,15))
+.states_([
+    ["", Color.black, Color.fromHexString("#78cdd7")],
+    ["",Color.white, Color.white(1.0)]
+]).action_({ |b| QtGUI.palette = if(b.value == 0);
+	if(b.value==0,{
+		~background = false;
+		w.refresh;
+	},{
+		~background = true;
+		w.refresh;
+});});
 //panner---------------------------------------------------------------------------
 
 wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
@@ -287,7 +308,7 @@ SynthDef(\s1, {arg bus;
 //FIRE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ~labelFire = StaticText(w1, Rect(20,0,titleWidth,titleHeight))
-.string_("fire")
+.string_("Fire")
 .align_(\center)
 .font_(Font("Eras Bold ITC", 18).boldVariant)
 .background_(Color.white);
@@ -301,6 +322,8 @@ SynthDef(\s1, {arg bus;
 
 ~knobWood = Knob(w1, Rect(3*knobIntraDist,50,knobDim,knobDim))
 .background_(Color.fromHexString("#78cdd7"))
+.color_(~colors)
+.mode_(\vert)
 .action_({
 	arg wood;
 	~numberboxWood.value_(wood.value.linlin(0,1,50,100));
@@ -322,6 +345,8 @@ SynthDef(\s1, {arg bus;
 //.background_(Color.rand);
 
 ~knobPanFire = Knob(w1, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
@@ -333,6 +358,8 @@ SynthDef(\s1, {arg bus;
 //.background_(Color.rand);
 
 ~knobDistFire = Knob(w1, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
@@ -360,6 +387,8 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 
 ~knobLenght = Knob(w2, Rect(3*knobIntraDist,50,knobDim,knobDim))
 .background_(Color.fromHexString("#78cdd7"))
+.color_(~colors)
+.mode_(\vert)
 .action_({
 	arg lenght;
 	~numberboxLenght.value_(lenght.value.linlin(0,1,50,100));
@@ -381,6 +410,8 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobGrain = Knob(w2, Rect(8*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg grain;
@@ -403,6 +434,8 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobOcc = Knob(w2, Rect(13*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg occ;
@@ -425,6 +458,8 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobPanWolf = Knob(w2, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
@@ -436,6 +471,8 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobDistWolf = Knob(w2, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
@@ -463,6 +500,8 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knob = Knob(w3, Rect(3*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg boh1;
@@ -485,6 +524,8 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knob = Knob(w3, Rect(8*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg boh2;
@@ -507,6 +548,8 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knob = Knob(w3, Rect(13*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg boh3;
@@ -529,6 +572,8 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobPanFrog = Knob(w3, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
@@ -540,6 +585,8 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobDistFrog = Knob(w3, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
@@ -566,6 +613,8 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobSpeed = Knob(w4, Rect(3*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg speed;
@@ -588,6 +637,8 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobSnowy = Knob(w4, Rect(8*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg snowy;
@@ -611,6 +662,8 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobPanStep = Knob(w4, Rect(36*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
@@ -622,6 +675,8 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 //.background_(Color.rand);
 
 ~knobDistStep = Knob(w4, Rect(42*knobIntraDist,50,knobDim,knobDim))
+.color_(~colors)
+.mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"));
 //.action
 
