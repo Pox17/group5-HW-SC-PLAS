@@ -1,14 +1,15 @@
 s.boot;
 
+
 ~scopefire;
 ~scopewolf;
 ~scopefrog;
 ~scopestep;
 ~wolfpath;
 ~path= thisProcess.nowExecutingPath.dirname;
+~srcPath = ~path +/+ "buffer/1.wav";
 
 (
-
 //VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 var f,wp,w1,w2,w3,w4,i1,i2,i3,i4,
@@ -264,11 +265,27 @@ bufStep = Buffer.alloc(s, 1024, 1);
 ~scopestep.server_(s);
 ~scopestep.start;
 
+//SYNTHDEFS
+
+SynthDef(\PassettiNeve, { |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
+    var center,sig2,hpf,verb,shf,lpf, sig, a;
+	a = Buffer.readChannel(s,~srcPath,channels:[0]);
+	sig2 = GrainBuf.ar(1,Impulse.ar(speed),0.4,a,1,0.34,2,0);
+	sig = sig2 * BrownNoise.ar(1,0);
+	verb = FreeVerb.ar(sig,0.2);
+	shf = PitchShift.ar(verb,0.2,0.2);
+	center = Pan2.ar(shf,0,1);
+	hpf = HPF.ar(center,hpfreq);
+	lpf = LPF.ar(hpf,6000)*20;
+    Out.ar(out,lpf);
+}).add;
 
 SynthDef(\scoping,{
-	arg bus, buffy;
-	ScopeOut2.ar(In.ar(bus,1), buffy);
-	Out.ar(0,In.ar(bus,1));
+	arg bus, buffy,outBus=0,amp=1;
+	var in;
+	in = In.ar(bus,1)*amp;
+	ScopeOut2.ar(in, buffy);
+	Out.ar(outBus,In.ar(bus,1));
 }).add;
 
 SynthDef(\s1, {arg bus;
@@ -279,7 +296,7 @@ SynthDef(\s1, {arg bus;
 // LABEL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ~labeltitle = StaticText(w, Rect((winWidth/2)-(200/2),15,200,titleHeight))
-.string_("Plas Granular Synth")
+.string_("Ti puzza l'ano, by Ric")
 .align_(\center)
 .font_(Font("Eras Bold ITC"/*"Cooper Black""Eras Bold ITC""Harlow Solid Italic""Matura MT Script Capitals""Swis721 BlkEx BT"*/, 15).boldVariant)
 .stringColor_(Color.black)
@@ -302,6 +319,13 @@ SynthDef(\s1, {arg bus;
 
 ~knobWood = Knob(w1, Rect(3*knobIntraDist,50,knobDim,knobDim))
 .background_(Color.fromHexString("#78cdd7"))
+.color_([
+	Color.fromHexString("#78cdd7"),
+	Color.white,
+	Color.black,
+	Color.red
+])
+.mode_(\vert)
 .action_({
 	arg wood;
 	~numberboxWood.value_(wood.value.linlin(0,1,50,100));
@@ -551,8 +575,12 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 ]).action_({ |b| QtGUI.palette = if(b.value == 0) });
 
 
+
 //STEP%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+~stepSynth = Synth.newPaused(\PassettiNeve,[\out,0]);
 ~labelStep = StaticText(w4, Rect(20,0,titleWidth,titleHeight))
 .string_("Step")
 .align_(\center)
@@ -570,11 +598,13 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg speed;
-	~numberboxSpeed.value_(speed.value.linlin(0,1,50,100));
+	~numberboxSpeed.value_(speed.value.linlin(0,1,1,2));
+	~stepSynth.set(\speed,~knobSpeed.value.linlin(0,1,1,2));
+
 });
 
 ~numberboxSpeed = NumberBox(w4, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+.value_(1)
 .align_(\center)
 .action_({
 	arg speed;
@@ -592,15 +622,17 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg snowy;
-	~numberboxSnowy.value_(snowy.value.linlin(0,1,50,100));
+	~numberboxSnowy.value_(snowy.value.linlin(0,1,200,2000));
+	~stepSynth.set(\hpfreq,~knobSnowy.value.linlin(0,1,200,2000));
 });
 
 ~numberboxSnowy = NumberBox(w4, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+.value_(200)
 .align_(\center)
 .action_({
 	arg snowy;
-    ~knobSnowy.valueAction_(snowy.value.linlin(50,100,0,1));
+    ~knobSnowy.valueAction_(snowy.value.linlin(200,2000,0,1));
+
 });
 
 
@@ -630,7 +662,28 @@ Button.new(w4, Rect(48*knobIntraDist,40,60,knobDim))
 .states_([
     ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
     ["STOP",Color.white, Color.red(0.5)]
-]).action_({ |b| QtGUI.palette = if(b.value == 0) });
+]).action_(
+	{ |b| QtGUI.palette = if(b.value == 0);
+		if(b.value == 0,
+			{
+				~stepSynth.run(false);
+				postln("stepsynth true");
+		},
+			{
+				~stepSynth.run(true);
+				postln("stepsynth flase");
+			}
+		);
+});
+
+{Synth(\scoping, [\buffy, bufFire.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
+{Synth(\scoping, [\buffy, bufWolf.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
+{Synth(\scoping, [\buffy, bufFrog.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
+{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, 0,\outBus,0,\amp,8])}.defer(0.1);
+
+{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
+
+//{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
 
 
 /*
@@ -704,11 +757,7 @@ f.openRead("C:/Users/Alberto/Documents/università/MAGISTRALE/corsi/CM-LANGUAGE 
 //.gridOn = true;
 //.gridResolution = 0.2;
 
-{Synth(\scoping, [\buffy, bufFire.bufnum, \bus, 5])}.defer(0.1);
-{Synth(\scoping, [\buffy, bufWolf.bufnum, \bus, 5])}.defer(0.1);
-{Synth(\scoping, [\buffy, bufFrog.bufnum, \bus, 5])}.defer(0.1);
-{Synth(\scoping, [\buffy, bufStep.bufnum, \bus, 5])}.defer(0.1);
 
-{h = Synth(\s1, [\bus, 5])}.defer(0.2);
 
 )
+s.plotTree;
