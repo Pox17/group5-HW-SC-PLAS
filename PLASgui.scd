@@ -74,12 +74,16 @@ selPos = -1;
 
 //WINDOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ~wolfpath =  ~path +/+ "/pointers/fire.png";
+~wolfBG = ~path +/+ "/backgrounds/Wolf_crop.png";
+~fireBG = ~path +/+ "/backgrounds/Fire_crop.png";
+~shrekBG = ~path +/+ "/backgrounds/Shrek_crop.png";
+~wolfBG = ~path +/+ "/backgrounds/Walk_crop.png";
 image = Image.new(~wolfpath);
-//i1 = Image.new(	"C:/Users/Alberto/Desktop/Fire_crop.png");
-//i2 = Image.new(	"C:/Users/Alberto/Desktop/Wolf_crop.png");
-//i3 = Image.new(	"C:/Users/Alberto/Desktop/Shrek_crop.png");
-//i4 = Image.new(	"C:/Users/Alberto/Desktop/Walk_crop.png");
-
+i1 = Image.new(	~fireBG);
+i2 = Image.new(	~wolfBG);
+i3 = Image.new(	~shrekBG);
+i4 = Image.new(	~wolfBG);
+~background=false;
 
 Window.closeAll;
 
