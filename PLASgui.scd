@@ -294,7 +294,7 @@ bufStep = Buffer.alloc(s, 1024, 1);
 SynthDef(\PassettiNeve, { |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
     var center,sig2,hpf,verb,shf,lpf, sig, a;
 	a = Buffer.readChannel(s,~srcPath,channels:[0]);
-	sig2 = GrainBuf.ar(1,Impulse.ar(speed+LFNoise1.ar(1).bipolar(speed/4)),0.4,a,1,0.34,2,0);
+	sig2 = GrainBuf.ar(1,Impulse.ar(speed+LFNoise1.ar((0.7*speed)).bipolar(speed/4)),0.4,a,1,0.34,2,0);
 	sig = sig2 * BrownNoise.ar(1,0);
 	verb = FreeVerb.ar(sig,0.2);
 	shf = PitchShift.ar(verb,0.2,0.2);
@@ -321,7 +321,7 @@ SynthDef(\frog, {
 	buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
 	envPitch = EnvGen.kr(Env.perc(1, 3, curve:0));
 	env = EnvGen.kr(Env.perc(0.01, 3));
-	trig = Trig1.ar((LFSaw.ar(0.3*excited2)+LFSaw.ar(1.2*excited2, 0, 0.25) + LFNoise1.ar(randomness).range(-0.5, 2)*randomness), 0.3);
+	trig = Trig1.ar((LFSaw.ar(0.3*excited2)+LFSaw.ar(1.2*excited2, 0, 0.25) + (LFNoise1.ar(randomness).range(-0.5, 2)*randomness)), 0.3);
 	sig = GrainBuf.ar(
 		numChannels: 1,
 		trigger: Impulse.ar(30 * trig ),
@@ -579,8 +579,8 @@ arg buff = a,
 .font_(Font("Eras Bold ITC", 18).boldVariant)
 .background_(Color.white);
 
-~knobLabel= StaticText(w3, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
-.string_("boh1")
+~randomKnobLabel= StaticText(w3, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("Random")
 .align_(\center)
 .font_(Font("arial", 12).boldVariant)
 .stringColor_(Color.white);
@@ -590,65 +590,72 @@ arg buff = a,
 .color_(~colors)
 .mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
+.value_(1)
 .action_({
 	arg boh1;
-	~numberbox.value_(boh1.value.linlin(0,1,50,100));
+	~randomNumberbox.value_(boh1.value);
+	~frogSynth.set(\randomness,~randomKnob.value);
 });
 
 ~randomNumberbox = NumberBox(w3, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 //.value_(0)
 .align_(\center)
+.value_(1)
 .action_({
 	arg boh1;
-    ~knob.valueAction_(boh1.value.linlin(50,100,0,1));
+	~knob.valueAction_(~randomKnob.value);
 });
 
-~knobLabel= StaticText(w3, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth,20))
-.string_("boh2")
+~excited1KnobLabel= StaticText(w3, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth,20))
+.string_("excited1")
 .align_(\center)
 .font_(Font("arial", 12).boldVariant)
 .stringColor_(Color.white);
 //.background_(Color.rand);
 
-~knob = Knob(w3, Rect(8*knobIntraDist,50,knobDim,knobDim))
+~excited1Knob = Knob(w3, Rect(8*knobIntraDist,50,knobDim,knobDim))
 .color_(~colors)
 .mode_(\vert)
+.value_(5/12)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg boh2;
-	~numberbox.value_(boh2.value.linlin(0,1,50,100));
+	~excited1Numberbox.value_(boh2.value.linlin(0,1,0.5,1.7));
+	~frogSynth.set(\excited1,~excited1Knob.value.linlin(0,1,0.5,1.7));
 });
 
-~numberbox = NumberBox(w3, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+~excited1Numberbox = NumberBox(w3, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+.value_(1)
 .align_(\center)
 .action_({
 	arg boh2;
-    ~knob.valueAction_(boh2.value.linlin(50,100,0,1));
+    ~knob.valueAction_(~exited1Knob.value.linlin(0.5,1.7,0,1));
 });
 
-~knobLabel = StaticText(w3, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
-.string_("boh3")
+~excited2KnobLabel = StaticText(w3, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
+.string_("excited2")
 .align_(\center)
 .font_(Font("arial", 12).boldVariant)
 .stringColor_(Color.white);
 //.background_(Color.rand);
 
-~knob = Knob(w3, Rect(13*knobIntraDist,50,knobDim,knobDim))
+~excited2Knob = Knob(w3, Rect(13*knobIntraDist,50,knobDim,knobDim))
 .color_(~colors)
 .mode_(\vert)
+.value_(5/12)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg boh3;
-	~numberbox.value_(boh3.value.linlin(0,1,50,100));
+	~excited2Numberbox.value_(boh3.value.linlin(0,1,0.5,1.7));
+	~frogSynth.set(\excited2,~excited1Knob.value.linlin(0,1,0.5,1.7));
 });
 
-~numberbox = NumberBox(w3, Rect(13*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+~excited2Numberbox = NumberBox(w3, Rect(13*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+.value_(1)
 .align_(\center)
 .action_({
 	arg boh3;
-    ~knob.valueAction_(boh3.value.linlin(50,100,0,1));
+    ~excited2Knob.valueAction_(~excited2Knob.value.linlin(0.5,1.7,0,1));
 });
 
 ~knobLabelPanFrog= StaticText(w3, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
