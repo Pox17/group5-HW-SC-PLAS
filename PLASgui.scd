@@ -31,8 +31,8 @@ winHeight = 650,
 winUpDown = 50,
 winRL = 900,
 
-panWinRL = 900,
-panWinUpDown = 750,
+panWinRL = 10,
+panWinUpDown = 50,
 panWinWidth = 600,
 panWinHeight = 300,
 
@@ -77,12 +77,12 @@ selPos = -1;
 ~wolfBG = ~path +/+ "/backgrounds/Wolf_crop.png";
 ~fireBG = ~path +/+ "/backgrounds/Fire_crop.png";
 ~shrekBG = ~path +/+ "/backgrounds/Shrek_crop.png";
-~wolfBG = ~path +/+ "/backgrounds/Walk_crop.png";
+~walkBG = ~path +/+ "/backgrounds/Walk_crop.png";
 image = Image.new(~wolfpath);
 i1 = Image.new(	~fireBG);
 i2 = Image.new(	~wolfBG);
 i3 = Image.new(	~shrekBG);
-i4 = Image.new(	~wolfBG);
+i4 = Image.new(	~walkBG);
 ~background=false;
 
 Window.closeAll;
