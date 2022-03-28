@@ -1,10 +1,17 @@
 
 s.boot;
 
-
+(
+~samplePath;
+~samplePath= thisProcess.nowExecutingPath.dirname +/+ "buffer/1.wav";
+~a = Buffer.readChannel(s,~samplePath,channels:[0]);
+~b = Bus.audio(s,1);
+~b2 = Bus.audio(s,2);
+~b3 = Bus.audio(s,2);
+)
 (
 SynthDef(\positioner,{
-	arg inBus=0, mainOut=[0,1], effectOut=[2,3], angle = 0, radius =0 ;
+	arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 	var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
 
 	efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
@@ -18,6 +25,20 @@ SynthDef(\positioner,{
 	Out.ar(effectOut,panEf);
 }).add;
 
+SynthDef(\PassettiNeve, {
+	arg out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1;
+    var center,sig2,hpf,verb,shf,lpf, sig;
+
+	sig2 = GrainBuf.ar(1,Impulse.ar(speed),0.4,~a,1,0.34,2,0);
+	sig = sig2 * BrownNoise.ar(1,0);
+	verb = FreeVerb.ar(sig,0.2);
+	shf = PitchShift.ar(verb,0.2,0.2);
+	center = Pan2.ar(shf,0,1);
+	hpf = HPF.ar(center,hpfreq);
+	lpf = LPF.ar(hpf,6000)*20;
+    Out.ar(out,
+		lpf)
+}).add;
 
 
 SynthDef(\impulse,{
@@ -30,18 +51,41 @@ SynthDef(\impulse,{
 
 
 SynthDef(\roomer,{
-	arg inBus, outBus = [0,1], dimension=0.7, mix=1.0;
-	var input, output, rev;
+	arg inBus, outBus = 0, dimension=0.2, mix=1.0;
+	var input, output,outputL,outputR, rev,yL,yR,zL,zR;
 
 	input = In.ar(inBus,2);
-	output = FreeVerb2.ar(input[0],input[1],mix,dimension);
-	Out.ar(outBus,output)
+
+	//outputL = FreeVerb.ar(input[0],mix,dimension,0.8);
+	//outputR = FreeVerb.ar(input[1],mix,dimension,0.8);
+
+	outputL = GVerb.ar(input[0], roomsize: 80, revtime: 4.85, damping: 0.3, inputbw: 0.19, spread: 10, drylevel: 0, earlyreflevel: -9, taillevel: -11, maxroomsize: 300, mul: 1, add: 0);
+
+
+	outputR = GVerb.ar(input[1], roomsize: 80, revtime: 4.85, damping: 0.3, inputbw: 0.19, spread: 10, drylevel: 0, earlyreflevel: -9, taillevel: -11, maxroomsize: 300, mul: 1, add: 0);
+
+	/*
+	    // reverb predelay time :
+	zL = DelayN.ar(input[0], 0.048);
+    // 7 length modulated comb delays in parallel :
+	yL = Mix.ar(Array.fill(7,{ CombL.ar(zL, 0.1, LFNoise1.kr(0.1.rand, 0.04, 0.05), 15) }));
+    // two parallel chains of 4 allpass delays (8 total) :
+	4.do({ outputL = AllpassN.ar(yL, 0.050, [0.050.rand, 0.050.rand], 1) });
+	    // reverb predelay time :
+	zR = DelayN.ar(input[1], 0.048);
+    // 7 length modulated comb delays in parallel :
+	yR = Mix.ar(Array.fill(7,{ CombL.ar(zR, 0.1, LFNoise1.kr(0.1.rand, 0.04, 0.05), 15) }));
+    // two parallel chains of 4 allpass delays (8 total) :
+	4.do({ outputR = AllpassN.ar(yR, 0.050, [0.050.rand, 0.050.rand], 1) });
+	//FreeVerb2.ar(input[0],input[1],mix,dimension);
+	//output = (outputL+outputR)*0.5;
+	*/
+
+	Out.ar(outBus,[outputL,outputR]);
 } ).add
 )
-
+s.plotTree;
 (
-var b = Bus.audio(s,1);
-var b2 = Bus.audio(s,2);
 var elRadius = 8,
 xStart=1,
 yStart=1,
@@ -59,13 +103,17 @@ v = UserView(w,Rect(50,50,height+2,width+2));
 
 r = Routine(
 {
+	i = Synth(\PassettiNeve,[\out,6]);
+	p = Synth.after(i,\positioner,[\inBus,6,\angle,~angPos[0,1],\mainOut,0,\effectOut,8]);
+	//Synth.before(p,\impulse,[\outBus,b]);
+		//j = Synth.after(p,\roomer,[\inBus,8,\outBus,0]);
+	~b2.scope;
+~b3.scope;
+	}
 
-	p = Synth(\positioner,[\inBus,b,\angle,~angPos[0,1],\mainOut,[0,1],\effectOut,b2]);
-	i = Synth.before(p,\impulse,[\outBus,b]);
-	j = Synth.after(p,\roomer,[\inBus,b2,\outBus,[0,1]]);
-}
+
 );
-
+//i = Synth(\PassettiNeve,[]);
 r.play;
 
 

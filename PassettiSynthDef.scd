@@ -8,7 +8,8 @@ s.boot
 //speed goes from 1 (slow) to 2 (fast)
 (
 SynthDef(\PassettiNeve, { |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
-    var center,sig2,hpf,verb,shf,lpf, sig;
+    var center,sig2,hpf,verb,shf,lpf, sig, a;
+	a = Buffer.readChannel(s,"./buffer/1.wav",channels:[0]);
 	sig2 = GrainBuf.ar(1,Impulse.ar(speed),0.4,a,1,0.34,2,0);
 	sig = sig2 * BrownNoise.ar(1,0);
 	verb = FreeVerb.ar(sig,0.2);

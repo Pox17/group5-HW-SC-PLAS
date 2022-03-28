@@ -3,10 +3,17 @@
 /*--------------------------------------------------------------------------------*/
 
 (
-a = Buffer.readChannel(s, "./buffer/1.wav", channels:[0]);
-b = Buffer.readChannel(s, "./buffer/2.wav", channels:[0]);
-c = Buffer.readChannel(s, "./buffer/3.wav", channels:[0]);
-);
+~samplePath1;
+~samplePath2;
+~samplePath3;
+~samplePath1= thisProcess.nowExecutingPath.dirname +/+ "buffer/1.wav";
+~samplePath2= thisProcess.nowExecutingPath.dirname +/+ "buffer/2.wav";
+~samplePath3= thisProcess.nowExecutingPath.dirname +/+ "buffer/3.wav";
+
+a = Buffer.readChannel(s, ~samplePath1, channels:[0]);
+b = Buffer.readChannel(s, ~samplePath2, channels:[0]);
+c = Buffer.readChannel(s, ~samplePath3, channels:[0]);
+)
 
 /*--------------------------------------------------------------------------------*/
 
@@ -83,4 +90,7 @@ SynthDef(\fire, {
 }).add;
 );
 
+(
+var fire;
+fire = Synth(\fire,[\wood,8]);)
 /*--------------------------------------------------------------------------------*/
