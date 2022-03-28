@@ -352,7 +352,7 @@ SynthDef(\frog, {
 		add: 0
 	);
 
-	mix = Mix([sig, sig2]*0.3);
+	mix = Mix([sig, sig2]);
 	out = LPF.ar(mix, 1500);
 
 	Out.ar(outBus, out);
