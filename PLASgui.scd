@@ -11,8 +11,9 @@ s.boot;
 ~srcPath = ~path +/+ "buffer/1.wav";
 
 (
-//VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+//VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//if(Server.hasBooted != true,{Server.boot})
 var f,wp,w1,w2,w3,w4,i1,i2,i3,i4,
 
 bufFire,bufFrog,bufStep,bufWolf,
