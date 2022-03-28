@@ -294,7 +294,7 @@ bufStep = Buffer.alloc(s, 1024, 1);
 SynthDef(\PassettiNeve, { |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
     var center,sig2,hpf,verb,shf,lpf, sig, a;
 	a = Buffer.readChannel(s,~srcPath,channels:[0]);
-	sig2 = GrainBuf.ar(1,Impulse.ar(speed),0.4,a,1,0.34,2,0);
+	sig2 = GrainBuf.ar(1,Impulse.ar(speed+LFNoise1.ar(1).bipolar(speed/4)),0.4,a,1,0.34,2,0);
 	sig = sig2 * BrownNoise.ar(1,0);
 	verb = FreeVerb.ar(sig,0.2);
 	shf = PitchShift.ar(verb,0.2,0.2);
@@ -353,7 +353,7 @@ SynthDef(\frog, {
 		add: 0
 	);
 
-	mix = Mix([sig, sig2]*0.3);
+	mix = Mix([sig, sig2]);
 	out = LPF.ar(mix, 1500);
 
 	Out.ar(outBus, out);
