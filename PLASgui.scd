@@ -303,6 +303,63 @@ SynthDef(\PassettiNeve, { |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed =
     Out.ar(out,lpf);
 }).add;
 
+
+
+
+SynthDef(\frog, {
+	arg outBus = 0,
+	grainPos = 0.162215,
+	randomness = 1, // 0.0 - 1.0
+	excited1 = 1,  // 0.5 - 1.7
+	excited2 = 1.7;  // 0.5 - 1.7
+
+
+	var sig, sig2, mix, out,
+	envPitch,env, buff,
+	trig, trig2;
+	buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
+	envPitch = EnvGen.kr(Env.perc(1, 3, curve:0));
+	env = EnvGen.kr(Env.perc(0.01, 3));
+	trig = Trig1.ar((LFSaw.ar(0.3*excited2)+LFSaw.ar(1.2*excited2, 0, 0.25) + LFNoise1.ar(randomness).range(-0.5, 2)*randomness), 0.3);
+	sig = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Impulse.ar(30 * trig ),
+		dur: 0.01,
+		sndbuf: buff,
+		rate: 5 + EnvGen.kr(Env.asr(0.3, 1, 0.1), gate: trig),
+		pos: grainPos,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: 5,
+		add: 0
+	);
+
+	trig2 = Trig1.ar(SinOsc.ar(80), 0.3);
+	sig2 = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Impulse.ar(60 * LFPulse.ar((4*excited1) + LFNoise1.ar(1).bipolar(2), 0, 0.3, 0.5, 0.5)),
+		dur: 0.01,
+		sndbuf: buff,
+		rate: 15 + EnvGen.ar(Env.asr(0.2, 2, 0.2), gate:trig2),
+		pos: 0.553747,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: 0.3,
+		add: 0
+	);
+
+	mix = Mix([sig, sig2]*0.3);
+	out = LPF.ar(mix, 1500);
+
+	Out.ar(outBus, out);
+}).add;
+
+
+
 SynthDef(\scoping,{
 	arg bus, buffy,outBus=0,amp=1;
 	var in;
@@ -505,7 +562,16 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 
 
 //FROG%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+/*
+arg buff = a,
+	outBus = 0,
+	grainPos = 0.162215,
+	randomness = 1, // 0.0 - 1.0
+	excited1 = 1,  // 0.5 - 1.7
+	excited2 = 1.7;  // 0.5 - 1.7
+*/
+~frogBus = Bus.audio(s,1);
+~frogSynth = Synth.newPaused(\frog,[\outBus,~frogBus]);
 ~labelFrog = StaticText(w3, Rect(20,0,titleWidth,titleHeight))
 .string_("Frog")
 .align_(\center)
@@ -519,7 +585,7 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 .stringColor_(Color.white);
 //.background_(Color.rand);
 
-~knob = Knob(w3, Rect(3*knobIntraDist,50,knobDim,knobDim))
+~randomKnob = Knob(w3, Rect(3*knobIntraDist,50,knobDim,knobDim))
 .color_(~colors)
 .mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
@@ -528,7 +594,7 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 	~numberbox.value_(boh1.value.linlin(0,1,50,100));
 });
 
-~numberbox = NumberBox(w3, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+~randomNumberbox = NumberBox(w3, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 //.value_(0)
 .align_(\center)
 .action_({
@@ -614,15 +680,27 @@ Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 .states_([
     ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
     ["STOP",Color.white, Color.red(0.5)]
-]).action_({ |b| QtGUI.palette = if(b.value == 0) });
+]).action_({ |b|
+	QtGUI.palette = if(b.value == 0);
+	if(b.value == 0,
+			{
+				~frogSynth.run(false);
+				postln("frogsynth true");
+		},
+			{
+				~frogSynth.run(true);
+				postln("frogsynth false");
+			}
+		);
+});
 
 
 
 //STEP%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-~stepSynth = Synth.newPaused(\PassettiNeve,[\out,0]);
+~stepBus = Bus.audio(s,1);
+~stepSynth = Synth.newPaused(\PassettiNeve,[\out,~stepBus]);
 ~labelStep = StaticText(w4, Rect(20,0,titleWidth,titleHeight))
 .string_("Step")
 .align_(\center)
@@ -728,8 +806,8 @@ Button.new(w4, Rect(48*knobIntraDist,40,60,knobDim))
 
 {Synth(\scoping, [\buffy, bufFire.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
 {Synth(\scoping, [\buffy, bufWolf.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
-{Synth(\scoping, [\buffy, bufFrog.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
-{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, 0,\outBus,0,\amp,8])}.defer(0.1);
+{Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\outBus,0,\amp,8])}.defer(0.1);
+{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,\outBus,0,\amp,8])}.defer(0.1);
 
 {h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
@@ -810,4 +888,5 @@ f.openRead("C:/Users/Alberto/Documents/università/MAGISTRALE/corsi/CM-LANGUAGE 
 
 
 )
+
 s.plotTree;
