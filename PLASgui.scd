@@ -4,7 +4,8 @@ s.boot;
 ~scopewolf;
 ~scopefrog;
 ~scopestep;
-
+~wolfpath;
+~path= thisProcess.nowExecutingPath.dirname;
 
 (
 
@@ -69,12 +70,12 @@ centerPosY = height,
 selPos = -1;
 
 //WINDOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-image = Image.new("C:/Users/Alberto/Desktop/fire-icon-3-product (3).png");
-i1 = Image.new(	"C:/Users/Alberto/Desktop/Fire_crop.png");
-i2 = Image.new(	"C:/Users/Alberto/Desktop/Wolf_crop.png");
-i3 = Image.new(	"C:/Users/Alberto/Desktop/Shrek_crop.png");
-i4 = Image.new(	"C:/Users/Alberto/Desktop/Walk_crop.png");
+~wolfpath =  ~path +/+ "/pointers/fire.png";
+image = Image.new(~wolfpath);
+//i1 = Image.new(	"C:/Users/Alberto/Desktop/Fire_crop.png");
+//i2 = Image.new(	"C:/Users/Alberto/Desktop/Wolf_crop.png");
+//i3 = Image.new(	"C:/Users/Alberto/Desktop/Shrek_crop.png");
+//i4 = Image.new(	"C:/Users/Alberto/Desktop/Walk_crop.png");
 
 
 Window.closeAll;

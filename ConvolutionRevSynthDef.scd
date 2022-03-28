@@ -19,14 +19,14 @@ SynthDef(\convRev, {
 )
 
 (
-fork{
+{
 	var convEl, conv, irL, irR, convTime, irSpctrmL,irSpctrmR,fftsize= 2048,bufsizeL,bufsizeR;
 
-	convTime= inSrc.duration+([irL.duration, irR.duration].sort[1]) + 1;
 
 	convEl = thisProcess.nowExecutingPath.dirname +/+ "buffer/BIGSKY-01.wav";
 	irL= Buffer.readChannel(s,convEl,channels:0); // IR left
 	irR= Buffer.readChannel(s,convEl,channels:1); // IR right
+
 	s.sync;
 	bufsizeL= PartConv.calcBufSize(fftsize, irL);
 	irSpctrmL= Buffer.alloc(s, bufsizeL, 1);
@@ -38,11 +38,9 @@ fork{
 	s.sync;
 	irL.free; irR.free;
 	Synth(\convRev,[\irSpctrmLNum,irSpctrmL,\irSpctrmRNum,irSpctrmR])
-	convTime.wait;
 
-	convolver.free;
 
-	inSrc.free; irSpctrmL.free; irSpctrmR.free
-}
+
+}.play
 
 )
