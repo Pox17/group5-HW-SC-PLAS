@@ -25,6 +25,7 @@ background,
 
 marg = 25,
 
+
 // main window dimension
 
 winWidth = 750,
@@ -361,6 +362,115 @@ SynthDef(\frog, {
 
 
 
+SynthDef(\wolf, {
+	arg
+	outBus = 0,
+	length = 3.5,
+	grainPos = 0.162215,
+	occurence = 0.2;
+
+	var sig,
+	env, env1, envgen1,
+	lpf, trig,buff;
+
+	buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
+
+	trig = Trig1.ar(LFNoise1.kr(occurence), length+LFNoise1.kr(0.5).range(-1, 0));
+
+	env = EnvGen.kr(Env.adsr(1, 0.5, 1, 2, 0.8, \sin), trig, 1, 0.1);
+	env1 = Env.sine(3.5);
+	envgen1= EnvGen.kr(env1, trig);
+
+
+	sig = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Impulse.ar(envgen1*50*SinOsc.kr(1/7).range(0.8, 1.1) + 350),
+		dur: 0.3,
+		sndbuf: buff,
+		rate: 0.2*env+LFNoise1.kr(4).bipolar(0.001),
+		pos: grainPos,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: 1,
+		add: 0
+	)*0.8 + LFNoise1.kr(10).bipolar(0.1);
+
+	lpf = LPF.ar(sig, 900);
+
+	Out.ar(outBus, lpf);
+
+}).add;
+
+
+SynthDef(\fire, {
+	arg	outBus = 0,
+	grainPos = 0.22,
+	wood = 1;
+
+	var sig1, sig2, sig3, mix, out,buff;
+
+	buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
+
+	// High sparkles
+	sig1 = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Dust.ar((0.3*wood)+LFNoise1.ar(3).bipolar(0.2)),
+		dur: 0.001,
+		sndbuf: buff,
+		rate: 3*SinOsc.ar(0.2).range(1,2),
+		pos: grainPos,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: 10 + LFNoise1.ar(0.3).range(0,2) + (wood/100),
+		add: 0
+	);
+
+	// Low Sparkles
+	sig2 = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Dust.ar(SinOsc.kr(0.5, 0, 0.5, 1) + LFNoise1.ar(0.3).bipolar(1)),
+		dur: 0.005+SinOsc.ar(0.1).bipolar(0.001),
+		sndbuf: buff,
+		rate: 0.7+SinOsc.ar(0.5).bipolar(0.1),
+		pos: grainPos,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: 2*SinOsc.ar(0.2, 0, 1, 1)+LFNoise1.ar(0.3).bipolar(1) + (wood/100),
+		add: 0
+	)*0.2;
+
+	// Noise
+	sig3 = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Dust.ar(20000+LFNoise1.ar(10).bipolar(1000)),
+		dur: 0.0005,
+		sndbuf: buff,
+		rate: 4,
+		pos: grainPos,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: (0.3 + SinOsc.ar(0.2+LFNoise1.ar(1).bipolar(0.1)).range(-0.05, 0))*0.1 + (wood/100),
+		add: 0
+	);
+
+	sig3 = LPF.ar(sig3, 4000+SinOsc.ar(0.3).bipolar(50));
+
+	mix = Mix([sig1, sig2, sig3]);
+	out = LPF.ar(mix, 5000);
+	out = HPF.ar(out, 1000);
+	out = Limiter.ar(out, 0.99);
+	Out.ar(outBus, out);
+
+}).add;
+
 SynthDef(\scoping,{
 	arg bus, buffy,outBus=0,amp=1;
 	var in;
@@ -385,6 +495,9 @@ SynthDef(\s1, {arg bus;
 
 //FIRE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+~fireBus = Bus.audio(s,1);
+~fireSynth = Synth.newPaused(\fire,[\outBus,~fireBus]);
+
 ~labelFire = StaticText(w1, Rect(20,0,titleWidth,titleHeight))
 .string_("Fire")
 .align_(\center)
@@ -399,16 +512,18 @@ SynthDef(\s1, {arg bus;
 //.background_(Color.rand);
 
 ~knobWood = Knob(w1, Rect(3*knobIntraDist,50,knobDim,knobDim))
+.value_(1/3)
 .background_(Color.fromHexString("#78cdd7"))
 .color_(~colors)
 .mode_(\vert)
 .action_({
 	arg wood;
-	~numberboxWood.value_(wood.value.linlin(0,1,50,100));
+	~numberboxWood.value_(wood.value.linlin(0,1,0.5,2));
+	~fireSynth.set(\wood,~knobWood.value.linlin(0,1,0.5,2))
 });
 
 ~numberboxWood = NumberBox(w1, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+.value_(1)
 .align_(\center)
 .action_({
 	arg wood;
@@ -445,10 +560,26 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 .states_([
     ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
     ["STOP",Color.white, Color.red(0.5)]
-]).action_({ |b| QtGUI.palette = if(b.value == 0) });
+]).action_({ |b| QtGUI.palette = if(b.value == 0);
+	if(b.value == 0,
+			{
+				~fireSynth.run(false);
+				postln("firesynth true");
+		},
+			{
+				~fireSynth.run(true);
+				postln("firesynth false");
+			}
+		);
+});
 
 
 //WOLF%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+~wolfBus = Bus.audio(s,1);
+~wolfSynth = Synth.newPaused(\wolf,[\outBus,~wolfBus]);
+
 
 ~labelWolf = StaticText(w2, Rect(20,0,titleWidth,titleHeight))
 .string_("Wolf")
@@ -466,18 +597,20 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 ~knobLenght = Knob(w2, Rect(3*knobIntraDist,50,knobDim,knobDim))
 .background_(Color.fromHexString("#78cdd7"))
 .color_(~colors)
+.value_(0.4)
 .mode_(\vert)
 .action_({
 	arg lenght;
-	~numberboxLenght.value_(lenght.value.linlin(0,1,50,100));
+	~numberboxLenght.value_(lenght.value.linlin(0,1,2.5,5));
+	~wolfSynth.set(\length,~knobGrain.value.linlin(0,1,2.5,5))
 });
 
 ~numberboxLenght = NumberBox(w2, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+.value_(3.5)
 .align_(\center)
 .action_({
 	arg lenght;
-    ~knobLenght.valueAction_(lenght.value.linlin(50,100,0,1));
+    ~knobLenght.valueAction_(lenght.value.linlin(2.5,5,0,1));
 });
 
 ~knobLabelGrain= StaticText(w2, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -489,19 +622,21 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 
 ~knobGrain = Knob(w2, Rect(8*knobIntraDist,50,knobDim,knobDim))
 .color_(~colors)
+.value_(0.162215)
 .mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg grain;
-	~numberboxGrain.value_(grain.value.linlin(0,1,50,100));
+	~numberboxGrain.value_(grain.value.linlin(0,1,0,1));
+	~wolfSynth.set(\grainPos,~knobGrain.value.linlin(0,1,0,1));
 });
 
 ~numberboxGrain = NumberBox(w2, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+.value_(0.162215)
 .align_(\center)
 .action_({
 	arg grain;
-    ~knobGrain.valueAction_(grain.value.linlin(50,100,0,1));
+    ~knobGrain.valueAction_(grain.value.linlin(0,1,0,1));
 });
 
 ~knobLabelOcc = StaticText(w2, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
@@ -513,19 +648,21 @@ Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 
 ~knobOcc = Knob(w2, Rect(13*knobIntraDist,50,knobDim,knobDim))
 .color_(~colors)
+.value_(0.25)
 .mode_(\vert)
 .background_(Color.fromHexString("#78cdd7"))
 .action_({
 	arg occ;
-	~numberboxOcc.value_(occ.value.linlin(0,1,50,100));
+	~numberboxOcc.value_(occ.value.linlin(0,1,0.1,0.5));
+	~wolfSynth.set(\occurence,~knobOcc.value.linlin(0,1,0.1,0.5));
 });
 
 ~numberboxOcc = NumberBox(w2, Rect(13*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-//.value_(0)
+.value_(0.2)
 .align_(\center)
 .action_({
 	arg occ;
-    ~knobOcc.valueAction_(occ.value.linlin(50,100,0,1));
+    ~knobOcc.valueAction_(occ.value.linlin(0.1,0.5,0,1));
 });
 
 ~knobLabelPanWolf= StaticText(w2, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -558,7 +695,19 @@ Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 .states_([
     ["PLAY", Color.black, Color.fromHexString("#78cdd7")],
     ["STOP",Color.white, Color.red(0.5)]
-]).action_({ |b| QtGUI.palette = if(b.value == 0) });
+]).action_({ |b| QtGUI.palette = if(b.value == 0);
+	if(b.value == 0,
+			{
+				~wolfSynth.run(false);
+				postln("wolfsynth true");
+		},
+			{
+				~wolfSynth.run(true);
+				postln("wolfsynth false");
+			}
+		);
+
+});
 
 
 
@@ -629,7 +778,7 @@ arg buff = a,
 .align_(\center)
 .action_({
 	arg boh2;
-    ~knob.valueAction_(~exited1Knob.value.linlin(0.5,1.7,0,1));
+    ~knob.valueAction_(~excited1Knob.value.linlin(0.5,1.7,0,1));
 });
 
 ~excited2KnobLabel = StaticText(w3, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
@@ -812,12 +961,12 @@ Button.new(w4, Rect(48*knobIntraDist,40,60,knobDim))
 		);
 });
 
-{Synth(\scoping, [\buffy, bufFire.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
-{Synth(\scoping, [\buffy, bufWolf.bufnum, \bus, 5,\outBus,10])}.defer(0.1);
+{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\outBus,0,\amp,8])}.defer(0.1);
+{Synth.after(~wolfSynth,\scoping, [\buffy, bufWolf.bufnum, \bus, ~wolfBus,\outBus,0,\amp,8])}.defer(0.1);
 {Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\outBus,0,\amp,8])}.defer(0.1);
 {Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,\outBus,0,\amp,8])}.defer(0.1);
 
-{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
+//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
 //{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
 
