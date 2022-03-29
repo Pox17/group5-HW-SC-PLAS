@@ -249,7 +249,7 @@ s.doWhenBooted(
 				angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
 				if((angle.abs-0.1)>= height) {
 
-				}
+				};
 				/*
 				if(y>(height+elRadius),{
 					y=(height-elRadius);
@@ -435,7 +435,7 @@ s.doWhenBooted(
 				maxGrains: 512,
 				mul: 1,
 				add: 0
-			)*0.8 + LFNoise1.kr(10).bipolar(0.1);
+		)*(0.8 + LFNoise1.kr(10).bipolar(0.1))*env;
 
 			lpf = LPF.ar(sig, 900);
 
@@ -499,7 +499,7 @@ s.doWhenBooted(
 				maxGrains: 512,
 				mul: (0.3 + SinOsc.ar(0.2+LFNoise1.ar(1).bipolar(0.1)).range(-0.05, 0))*0.1 + (wood/100),
 				add: 0
-			);
+			)*LFNoise1.ar(wood).range(0.5, 1.5);
 
 			sig3 = LPF.ar(sig3, 4000+SinOsc.ar(0.3).bipolar(50));
 
