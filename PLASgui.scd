@@ -79,19 +79,6 @@ s.doWhenBooted(
 		~srcPath = ~path +/+ "buffer/1.wav";
 
 		// panner variables
-		
-
-		var elRadius = 8,
-		xStart=1,
-		yStart=1,
-		height=panWinHeight,
-		width=panWinWidth,
-		numOfPoints =4,
-		pos1D = Array.fill((numOfPoints*2),{10+(180.rand)}).postln,
-		pos=Array2D.fromArray(numOfPoints,2,pos1D).postln,
-		centerPosX = width/2,
-		centerPosY = height,
-		selPos = -1;
 
 		//WINDOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		~wolfpath =  ~path +/+ "/pointers/fire.png";
@@ -197,13 +184,15 @@ s.doWhenBooted(
 				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
 			.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
 			.color_(Color.white)
-			.fill;
+			.fill
 			//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
+			.addArc((panWinWidth/2)@(panWinHeight),height-10,pi,2pi)
+			.stroke;
 		};
 
 
 		~angPos = Array2D.new(numOfPoints,2);
-		v = UserView(wp,Rect(0,0,height,width));
+		v = UserView(wp,Rect(0,0,width,height));
 
 		v.drawFunc = {
 
@@ -250,12 +239,44 @@ s.doWhenBooted(
 				selPos.postln
 		};
 		};
-		v.mouseMoveAction = { arg view, x,y, m;
+		v.mouseMoveAction = {
+			arg view, x,y, m;
+			var angle,distance;
+			var l = (2*(height-10));
+			var h=(height-10);
 			if(selPos!=(-1),{
-				if(x<=(elRadius+1),{x=(elRadius+1)});
-				if(x>=(width-(elRadius+1)),{x=(width-(elRadius+1))});
-				if(y<=(elRadius+1),{y=(elRadius+1)});
+				distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
+				angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
+				if((angle.abs-0.1)>= height) {
+
+				}
+				/*
+				if(y>(height+elRadius),{
+					y=(height-elRadius);
+					x=x;
+				},{
+					if((distance+elRadius)>=(h), {
+					if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
+					if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
+					//x = (((h*((angle).sin))+centerPosX)+elRadius);
+					y = (((h-(h*(angle).cos)))+elRadius);
+
+
+
+				});
+				});
+				*/
+				/*
+				if(x<=((l-((4*y*l)-(4*(y**2))).sqrt)/2),{
+					x=((l-((4*y*l)-(4*(y**2))).sqrt)/2);
+					y=((2*h)+((2*x*h)-(x**2)).sqrt)
+				});
+				if(x>=((l+((4*y*l)-(4*(y**2))).sqrt)/2),{
+					x=((l+((4*y*l)-(4*(y**2))).sqrt)/2);
+					y=((2*h)+((2*x*h)-(x**2)).sqrt)
+				});
 					if(y>=(height-(elRadius+1)),{y=(height-(elRadius+1))});
+			*/
 			pos[selPos,0] =x;
 			pos[selPos,1] =y;
 				p.set(\angle,~angPos[0,1]);
@@ -558,6 +579,8 @@ s.doWhenBooted(
 
 		~knobPanFire = Knob(w1, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.centered_(true)
+		.value_(0.5)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"));
 		//.action
@@ -693,6 +716,8 @@ s.doWhenBooted(
 
 		~knobPanWolf = Knob(w2, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.centered_(true)
+		.value_(0.5)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"));
 		//.action
@@ -835,6 +860,8 @@ s.doWhenBooted(
 
 		~knobPanFrog = Knob(w3, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.centered_(true)
+		.value_(0.5)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"));
 		//.action
@@ -945,6 +972,8 @@ s.doWhenBooted(
 
 		~knobPanStep = Knob(w4, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.centered_(true)
+		.value_(0.5)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"));
 		//.action
@@ -1061,5 +1090,6 @@ s.doWhenBooted(
 		//.gridOn = true;
 		//.gridResolution = 0.2;
 });
+)
 
 s.plotTree;
