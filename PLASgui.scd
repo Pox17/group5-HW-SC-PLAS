@@ -247,9 +247,23 @@ s.doWhenBooted(
 			if(selPos!=(-1),{
 				distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
 				angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
-				if((angle.abs-0.1)>= height) {
+				if(y>= (h-elRadius), {
+					y=h-elRadius;
+					if(x<=(elRadius),{
+						x= 10+elRadius;
+					});
+					if(x>=(width-elRadius),{
+						x= width-10-elRadius;
+					});
+				},{
+					if((distance+elRadius)>=(h), {
+					if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
+					if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
+					//x = (((h*((angle).sin))+centerPosX)+elRadius);
+					y = (((h-(h*(angle).cos)))+elRadius);
+					});
+				});
 
-				}
 				/*
 				if(y>(height+elRadius),{
 					y=(height-elRadius);
