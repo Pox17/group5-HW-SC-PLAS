@@ -1083,9 +1083,9 @@ s.doWhenBooted(
 
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
-		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
-		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
-		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
+		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[1,3].value,\effectOut,~effectBus])}.defer(0.2);
+		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[2,3].value,\effectOut,~effectBus])}.defer(0.2);
+		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[3,3].value,\effectOut,~effectBus])}.defer(0.2);
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
