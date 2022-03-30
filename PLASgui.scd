@@ -5,6 +5,7 @@ s.boot;
 
 (
 if(s.hasBooted != true,{s.boot});
+s.freeAll;
 s.doWhenBooted(
 {
 		//VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,7 +22,7 @@ s.doWhenBooted(
 
 		// main window dimension
 
-		winWidth = 750,
+		winWidth = 900,
 		winHeight = 650,
 		winUpDown = 50,
 		winRL = 900,
@@ -33,7 +34,7 @@ s.doWhenBooted(
 
 		// single section dimensions
 
-		sectWinWidth = winWidth-(2*marg),
+		sectWinWidth = 750-(2*marg),
 		sectWinHeight = (winHeight-(5*marg))/4,
 
 		// label
@@ -99,12 +100,27 @@ s.doWhenBooted(
 		w = Window.new("PLASgui",Rect(winRL,winUpDown,winWidth,winHeight), false)
 		.front
 		.alwaysOnTop_(true)
+		/*.acceptsMouseOver_(true)
+		.mouseOverAction_({
+			if((x>=5 && x<=20),{
+				if((y>=5 && y<=20),{
+					~info=true;
+				},
+				{~info=false;}
+				)
+			});
+			w.refresh;
+		})*/
 		//.background_(Color.rand)
 		.drawFunc = {
 
-			Pen.addRect(w.view.bounds.insetBy(0));
+
+			Pen.addRect(w.view.bounds);
 			Pen.fillAxialGradient(w.view.bounds.leftTop, w.view.bounds.rightBottom, Color.fromHexString("#05668d"), Color.fromHexString("#028090"));
 
+
+
+        Pen.perform([\stroke, \fill].choose);
 
 			Pen.addRect(Rect(marg,marg,sectWinWidth,sectWinHeight))
 			.width_(5)
@@ -124,6 +140,11 @@ s.doWhenBooted(
 			.stroke;
 
 			Pen.addRect(Rect(marg,(4*marg)+(3*sectWinHeight),sectWinWidth,sectWinHeight))
+			.width_(5)
+			.strokeColor_(Color.fromHexString("#78cdd7"))
+			.stroke;
+
+			Pen.addRect(Rect(750,marg,sectWinHeight,winHeight-(2*marg)))
 			.width_(5)
 			.strokeColor_(Color.fromHexString("#78cdd7"))
 			.stroke;
@@ -159,8 +180,47 @@ s.doWhenBooted(
 
 		};
 
+		/*if(~info,{
+			StaticText(w, Rect(20,5,30,30))
+		.string_("sfondi")
+		.align_(\center)
+		.font_(Font("arial"/*"Eras Bold ITC""Cooper Black""Eras Bold ITC""Harlow Solid Italic""Matura MT Script Capitals""Swis721 BlkEx BT"*/, 15).boldVariant)
+		.stringColor_(Color.black)
+		.background_(Color.white)
+		});*/
 
-		Button.new(w, Rect(5,5,15,15))
+
+		//Button.new(w, Rect(5,5,15,15))
+
+
+
+		Button.new(w, Rect(winWidth-5,5,15,15))
+		.states_([
+			["", Color.black, Color.fromHexString("#78cdd7")],
+			["",Color.white, Color.white(1.0)]
+		]).action_({ |b| QtGUI.palette = if(b.value == 0);
+			if(b.value==0,{
+				~background = false;
+				w.refresh;
+			},{
+				~background = true;
+				w.refresh;
+		});});
+
+		Button.new(w, Rect(winWidth-5,winHeight-5,15,15))
+		.states_([
+			["", Color.black, Color.fromHexString("#78cdd7")],
+			["",Color.white, Color.white(1.0)]
+		]).action_({ |b| QtGUI.palette = if(b.value == 0);
+			if(b.value==0,{
+				~background = false;
+				w.refresh;
+			},{
+				~background = true;
+				w.refresh;
+		});});
+
+		Button.new(w, Rect(5,winHeight-5,15,15))
 		.states_([
 			["", Color.black, Color.fromHexString("#78cdd7")],
 			["",Color.white, Color.white(1.0)]
@@ -174,11 +234,13 @@ s.doWhenBooted(
 		});});
 		//panner---------------------------------------------------------------------------
 
+
 		wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
 		.front
 		.alwaysOnTop_(true)
 		//.background_(Color.rand)
 		.drawFunc = {
+
 			Pen.addRect(wp.view.bounds.insetBy(0))
 			.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
 				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
@@ -1103,6 +1165,7 @@ s.doWhenBooted(
 		//.drawsWaveForm = true
 		//.gridOn = true;
 		//.gridResolution = 0.2;
+
 });
 )
 
