@@ -1,8 +1,6 @@
 s.boot;
 
-
-
-
+s.plotTree;
 (
 if(s.hasBooted != true,{s.boot});
 s.freeAll;
@@ -10,6 +8,7 @@ s.doWhenBooted(
 {
 		//VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		var f,wp,w1,w2,w3,w4,i1,i2,i3,i4,
+
 
 		bufFire,bufFrog,bufStep,bufWolf,
 
@@ -25,7 +24,7 @@ s.doWhenBooted(
 		winWidth = 900,
 		winHeight = 650,
 		winUpDown = 50,
-		winRL = 900,
+		winRL = 600,
 
 		panWinRL = 10,
 		panWinUpDown = 50,
@@ -61,14 +60,17 @@ s.doWhenBooted(
 		height=panWinHeight,
 		width=panWinWidth,
 		numOfPoints =4,
-		pos1D = Array.fill((numOfPoints*2),{10+(180.rand)}).postln,
-		pos=Array2D.fromArray(numOfPoints,2,pos1D).postln,
+
 		centerPosX = width/2,
 		centerPosY = height,
 		selPos = -1;
 
 
-
+		/*
+		 *rows: 0 fire, 1 wolf, 2 frog, 3 step
+		 *columns: 0 pan Knob, 1 distance Knob, 2 x, 3 y, 4 image, 5 positioner
+		 */
+		~knobPos=Array2D.new(4,6);
 
 		~scopefire;
 		~scopewolf;
@@ -82,12 +84,22 @@ s.doWhenBooted(
 		// panner variables
 
 		//WINDOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		~wolfpath =  ~path +/+ "/pointers/fire.png";
+		~wolfPointer =  ~path +/+ "/pointers/wolf.png";
+		~firePointer =  ~path +/+ "/pointers/fire.png";
+		~cricketPointer =  ~path +/+ "/pointers/cricket.png";
+		~stepsPointer =  ~path +/+ "/pointers/steps.png";
 		~wolfBG = ~path +/+ "/backgrounds/Wolf_crop.png";
 		~fireBG = ~path +/+ "/backgrounds/Fire_crop.png";
 		~shrekBG = ~path +/+ "/backgrounds/Shrek_crop.png";
 		~walkBG = ~path +/+ "/backgrounds/Walk_crop.png";
-		image = Image.new(~wolfpath);
+		~wolfImage = Image.new(~wolfPointer);
+		~fireImage = Image.new(~firePointer);
+		~stepsImage = Image.new(~stepsPointer);
+		~cricketImage = Image.new(~cricketPointer);
+		~knobPos[0,4]= ~fireImage;
+		~knobPos[1,4]= ~wolfImage;
+		~knobPos[2,4]= ~cricketImage;
+		~knobPos[3,4]= ~stepsImage;
 		i1 = Image.new(	~fireBG);
 		i2 = Image.new(	~wolfBG);
 		i3 = Image.new(	~shrekBG);
@@ -232,137 +244,7 @@ s.doWhenBooted(
 				~background = true;
 				w.refresh;
 		});});
-		//panner---------------------------------------------------------------------------
 
-
-		wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
-		.front
-		.alwaysOnTop_(true)
-		//.background_(Color.rand)
-		.drawFunc = {
-
-			Pen.addRect(wp.view.bounds.insetBy(0))
-			.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
-				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
-			.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
-			.color_(Color.white)
-			.fill
-			//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
-			.addArc((panWinWidth/2)@(panWinHeight),height-10,pi,2pi)
-			.stroke;
-		};
-
-
-		~angPos = Array2D.new(numOfPoints,2);
-		v = UserView(wp,Rect(0,0,width,height));
-
-		v.drawFunc = {
-
-			"CIAO".postln;
-			for (0, numOfPoints-1, {
-				arg i;
-				var angle, distance,angle01,distance01;
-				i.postln;
-				pos.at(i,0).postln;
-				Pen.fillColor = Color.black;
-				Pen.strokeColor = Color.white;
-				"CIAO1".postln;
-				//Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
-				Pen.drawImage( (pos.at(i,0)-17)@(pos.at(i,1)-17), image, operation: 'sourceOver', opacity:1);
-				"CIAO2".postln;
-				angle = ((pos[i,0]-centerPosX)/(pos[i,1]-centerPosY).abs).atan;
-				angle01 = angle/(pi/2);
-				distance = (((pos[i,0]-centerPosX).squared)+((pos[i,1]-centerPosY).squared)).sqrt;
-				distance01 = distance/height;
-				"distance01".postln;
-				distance01.postln;
-				"angle01".postln;
-				angle01.postln;
-				~angPos[i,0] = distance01;
-				~angPos[i,1] = angle01;
-
-				Pen.fillStroke;
-			});
-		};
-
-		v.mouseDownAction = { arg view, x,y, m;
-			//m.postln;
-			([256, 0].includes(m)).if{ // restrict to no modifier
-			//value = (x).linlin(0,v.bounds.width,0,1); v.doAction};
-			var found = false;
-				for (0, numOfPoints-1, {
-				arg i;
-					if((x>=(pos[i,0]-elRadius))&&((x<=(pos[i,0]+elRadius)))&&((y>=(pos[i,1]-elRadius)))&&((y<=(pos[i,1]+elRadius))),{
-						selPos = i;
-						found =true;
-					});
-			});
-				if(found!=true,{selPos= (-1)});
-				selPos.postln
-		};
-		};
-		v.mouseMoveAction = {
-			arg view, x,y, m;
-			var angle,distance;
-			var l = (2*(height-10));
-			var h=(height-10);
-			if(selPos!=(-1),{
-				distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
-				angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
-				if(y>= (h-elRadius), {
-					y=h-elRadius;
-					if(x<=(elRadius),{
-						x= 10+elRadius;
-					});
-					if(x>=(width-elRadius),{
-						x= width-10-elRadius;
-					});
-				},{
-					if((distance+elRadius)>=(h), {
-					if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
-					if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
-					//x = (((h*((angle).sin))+centerPosX)+elRadius);
-					y = (((h-(h*(angle).cos)))+elRadius);
-					});
-				});
-
-				/*
-				if(y>(height+elRadius),{
-					y=(height-elRadius);
-					x=x;
-				},{
-					if((distance+elRadius)>=(h), {
-					if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
-					if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
-					//x = (((h*((angle).sin))+centerPosX)+elRadius);
-					y = (((h-(h*(angle).cos)))+elRadius);
-
-
-
-				});
-				});
-				*/
-				/*
-				if(x<=((l-((4*y*l)-(4*(y**2))).sqrt)/2),{
-					x=((l-((4*y*l)-(4*(y**2))).sqrt)/2);
-					y=((2*h)+((2*x*h)-(x**2)).sqrt)
-				});
-				if(x>=((l+((4*y*l)-(4*(y**2))).sqrt)/2),{
-					x=((l+((4*y*l)-(4*(y**2))).sqrt)/2);
-					y=((2*h)+((2*x*h)-(x**2)).sqrt)
-				});
-					if(y>=(height-(elRadius+1)),{y=(height-(elRadius+1))});
-			*/
-			pos[selPos,0] =x;
-			pos[selPos,1] =y;
-				p.set(\angle,~angPos[0,1]);
-				if((~angPos[0,0]>=1),{~angPos[0,0] = 1});
-				p.set(\radius,~angPos[0,0]);
-			v.refresh;
-
-			}
-			)
-		};
 
 
 		// sections----------------------------------------------------
@@ -429,7 +311,9 @@ s.doWhenBooted(
 			grainPos = 0.162215,
 			randomness = 1, // 0.0 - 1.0
 			excited1 = 1,  // 0.5 - 1.7
-			excited2 = 1.7;  // 0.5 - 1.7
+			excited2 = 1.7, // 0.5 - 1.7
+			ampFront = 1,
+			ampRear = 1;
 
 
 			var sig, sig2, mix, out,
@@ -452,7 +336,7 @@ s.doWhenBooted(
 				maxGrains: 512,
 				mul: 5,
 				add: 0
-			);
+			)*excited2;
 
 			trig2 = Trig1.ar(SinOsc.ar(80), 0.3);
 			sig2 = GrainBuf.ar(
@@ -468,7 +352,7 @@ s.doWhenBooted(
 				maxGrains: 512,
 				mul: 0.3,
 				add: 0
-			);
+			)*excited1;
 
 			mix = Mix([sig, sig2]);
 			out = LPF.ar(mix, 1500);
@@ -511,7 +395,7 @@ s.doWhenBooted(
 				maxGrains: 512,
 				mul: 1,
 				add: 0
-			)*0.8 + LFNoise1.kr(10).bipolar(0.1);
+		)*(0.8 + LFNoise1.kr(10).bipolar(0.1))*env;
 
 			lpf = LPF.ar(sig, 900);
 
@@ -525,14 +409,14 @@ s.doWhenBooted(
 			grainPos = 0.22,
 			wood = 1;
 
-			var sig1, sig2, sig3, mix, out,buff;
+			var sig1, sig2, sig3, sig4, mix, out,buff;
 
 			buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
 
 			// High sparkles
 			sig1 = GrainBuf.ar(
 				numChannels: 1,
-				trigger: Dust.ar((0.3*wood)+LFNoise1.ar(3).bipolar(0.2)),
+				trigger: Dust.ar((0.6*wood)+LFNoise1.ar(3).bipolar(0.2)),
 				dur: 0.001,
 				sndbuf: buff,
 				rate: 3*SinOsc.ar(0.2).range(1,2),
@@ -541,12 +425,30 @@ s.doWhenBooted(
 				pan: 0,
 				envbufnum: -1,
 				maxGrains: 512,
-				mul: 10 + LFNoise1.ar(0.3).range(0,2) + (wood/100),
+				// mul: 10 + LFNoise1.ar(0.3).range(0,2) + (wood/100),
+				mul: 10*LFNoise1.ar(0.3).range(1,1.5) + (wood/100),
+				add: 0
+			);
+
+			// High sparkles 2
+			sig2 = GrainBuf.ar(
+				numChannels: 1,
+				// trigger: Impulse.ar((3*wood)+LFNoise1.ar(10).bipolar(1)),
+				trigger: Dust.ar(LFNoise1.ar(wood).range(1, 2)),
+				dur: 0.003,
+				sndbuf: buff,
+				rate: 3*LFNoise1.ar(0.2).range(1,2),
+				pos: 0.241694,
+				interp: 2,
+				pan: 0,
+				envbufnum: -1,
+				maxGrains: 512,
+				mul: LFNoise1.ar(0.3).range(1,2) + (wood/100),
 				add: 0
 			);
 
 			// Low Sparkles
-			sig2 = GrainBuf.ar(
+			sig3 = GrainBuf.ar(
 				numChannels: 1,
 				trigger: Dust.ar(SinOsc.kr(0.5, 0, 0.5, 1) + LFNoise1.ar(0.3).bipolar(1)),
 				dur: 0.005+SinOsc.ar(0.1).bipolar(0.001),
@@ -562,7 +464,7 @@ s.doWhenBooted(
 			)*0.2;
 
 			// Noise
-			sig3 = GrainBuf.ar(
+			sig4 = GrainBuf.ar(
 				numChannels: 1,
 				trigger: Dust.ar(20000+LFNoise1.ar(10).bipolar(1000)),
 				dur: 0.0005,
@@ -575,16 +477,32 @@ s.doWhenBooted(
 				maxGrains: 512,
 				mul: (0.3 + SinOsc.ar(0.2+LFNoise1.ar(1).bipolar(0.1)).range(-0.05, 0))*0.1 + (wood/100),
 				add: 0
-			);
+			)*LFNoise1.ar(wood).range(0.5, 1.5);
 
-			sig3 = LPF.ar(sig3, 4000+SinOsc.ar(0.3).bipolar(50));
+			sig3 = LPF.ar(sig4, 4000+SinOsc.ar(0.3).bipolar(50));
 
-			mix = Mix([sig1, sig2, sig3]);
-			out = LPF.ar(mix, 5000);
-			out = HPF.ar(out, 1000);
-			out = Limiter.ar(out, 0.99);
+			// mix = Mix([sig1, sig2, sig3, sig4]);
+			mix = Mix([sig1, sig2, sig4]);
+			out = LPF.ar(mix, 2000);
+			out = HPF.ar(out, 700);
+			out = FreeVerb.ar(out);
+			out = Limiter.ar(out, 0.7);
 			Out.ar(outBus, out);
+		}).add;
+		
+		SynthDef(\positioner,{
+			arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
+			var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
 
+			efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
+			inGain = (1-(0.95*radius));//1-radius;//1.1-((radius+0.15).log10);
+			input = In.ar(inBus,1); //(1-(radius-0.1));
+			val = input*inGain;
+			valEf = input*efGain; //*(efGain)*(inGain+0.1);
+			panMain = Pan2.ar(val,angle);
+			panEf = Pan2.ar(valEf,angle);
+			Out.ar(mainOut,panMain);
+			Out.ar(effectOut,panEf);
 		}).add;
 
 		SynthDef(\scoping,{
@@ -592,7 +510,7 @@ s.doWhenBooted(
 			var in;
 			in = In.ar(bus,1)*amp;
 			ScopeOut2.ar(in, buffy);
-			Out.ar(outBus,In.ar(bus,1));
+			//Out.ar(outBus,In.ar(bus,1));
 		}).add;
 
 		SynthDef(\s1, {arg bus;
@@ -653,13 +571,25 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobPanFire = Knob(w1, Rect(36*knobIntraDist,50,knobDim,knobDim))
+		/*~knobPanFire*/ ~knobPos[0,2] = Knob(w1, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
 		.centered_(true)
 		.value_(0.5)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[0,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[0,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[0,0] = x;
+				~knobPos[0,1] = y;
+				~knobPos[0,5].set(\angle,~knobPos[0,2].value.linlin(0,1,-1,1));
+				~knobPos[0,5].set(\radius,~knobPos[0,3].value);
+				v.refresh;
+		});
 
 		~knobLabelDistFire= StaticText(w1, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
 		.string_("distance")
@@ -668,11 +598,24 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobDistFire = Knob(w1, Rect(42*knobIntraDist,50,knobDim,knobDim))
+		/*~knobDistFire*/ ~knobPos[0,3] = Knob(w1, Rect(42*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.value_(0.2)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[0,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[0,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[0,0] = x;
+				~knobPos[0,1] = y;
+				~knobPos[0,5].set(\angle,~knobPos[0,2].value.linlin(0,1,-1,1));
+				~knobPos[0,5].set(\radius,~knobPos[0,3].value);
+				v.refresh;
+		});
 
 		Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
@@ -790,13 +733,25 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobPanWolf = Knob(w2, Rect(36*knobIntraDist,50,knobDim,knobDim))
+		/*~knobPanWolf*/~knobPos[1,2] = Knob(w2, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
 		.centered_(true)
 		.value_(0.5)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[1,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[1,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[1,0] = x;
+				~knobPos[1,1] = y;
+				~knobPos[1,5].set(\angle,~knobPos[1,2].value.linlin(0,1,-1,1));
+				~knobPos[1,5].set(\radius,~knobPos[1,3].value);
+				v.refresh;
+		});
 
 		~knobLabelDistWolf= StaticText(w2, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
 		.string_("distance")
@@ -805,11 +760,24 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobDistWolf = Knob(w2, Rect(42*knobIntraDist,50,knobDim,knobDim))
+		/*~knobDistWolf*/ ~knobPos[1,3]= Knob(w2, Rect(42*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.value_(0.4)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[1,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[1,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[1,0] = x;
+				~knobPos[1,1] = y;
+				~knobPos[1,5].set(\angle,~knobPos[1,2].value.linlin(0,1,-1,1));
+				~knobPos[1,5].set(\radius,~knobPos[1,3].value);
+				v.refresh;
+		});
 
 		Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
@@ -934,13 +902,25 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobPanFrog = Knob(w3, Rect(36*knobIntraDist,50,knobDim,knobDim))
+		/*~knobPanFrog*/~knobPos[2,2] = Knob(w3, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
 		.centered_(true)
 		.value_(0.5)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[2,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[2,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[2,0] = x;
+				~knobPos[2,1] = y;
+				~knobPos[2,5].set(\angle,~knobPos[2,2].value.linlin(0,1,-1,1));
+				~knobPos[2,5].set(\radius,~knobPos[2,3].value);
+				v.refresh;
+		});
 
 		~knobLabelDistFrog= StaticText(w3, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
 		.string_("distance")
@@ -949,11 +929,24 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobDistFrog = Knob(w3, Rect(42*knobIntraDist,50,knobDim,knobDim))
+		/*~knobDistFrog*/ ~knobPos[2,3] = Knob(w3, Rect(42*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.value_(0.6)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[2,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[2,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[2,0] = x;
+				~knobPos[2,1] = y;
+				~knobPos[2,5].set(\angle,~knobPos[2,2].value.linlin(0,1,-1,1));
+				~knobPos[2,5].set(\radius,~knobPos[2,3].value);
+				v.refresh;
+		});
 
 		Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
@@ -1046,13 +1039,25 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobPanStep = Knob(w4, Rect(36*knobIntraDist,50,knobDim,knobDim))
+		/*~knobPanStep*/ ~knobPos[3,2] = Knob(w4, Rect(36*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
 		.centered_(true)
 		.value_(0.5)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[3,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[3,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[3,0] = x;
+				~knobPos[3,1] = y;
+				~knobPos[3,5].set(\angle,~knobPos[3,2].value.linlin(0,1,-1,1));
+				~knobPos[3,5].set(\radius,~knobPos[3,3].value);
+				v.refresh;
+		});
 
 		~knobLabelDistStep= StaticText(w4, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
 		.string_("distance")
@@ -1061,11 +1066,24 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.background_(Color.rand);
 
-		~knobDistStep = Knob(w4, Rect(42*knobIntraDist,50,knobDim,knobDim))
+		/*~knobDistStep*/~knobPos[3,3] = Knob(w4, Rect(42*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
+		.value_(0.9)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		//.action
+		.background_(Color.fromHexString("#78cdd7"))
+		.action_(
+			{
+				var angle,distance,x,y;
+				angle = ~knobPos[3,2].value.linlin(0,1,-pi/2,pi/2);
+				distance = ~knobPos[3,3].value.linlin(0,1,0,height-10);
+				x = (((distance*((angle).sin))+centerPosX)+elRadius);
+				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+				~knobPos[3,0] = x;
+				~knobPos[3,1] = y;
+				~knobPos[3,5].set(\angle,~knobPos[3,2].value.linlin(0,1,-1,1));
+				~knobPos[3,5].set(\radius,~knobPos[3,3].value);
+				v.refresh;
+		});
 
 		Button.new(w4, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
@@ -1085,11 +1103,17 @@ s.doWhenBooted(
 				);
 		});
 
-		{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\outBus,0,\amp,8])}.defer(0.1);
-		{Synth.after(~wolfSynth,\scoping, [\buffy, bufWolf.bufnum, \bus, ~wolfBus,\outBus,0,\amp,8])}.defer(0.1);
-		{Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\outBus,0,\amp,8])}.defer(0.1);
-		{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,\outBus,0,\amp,8])}.defer(0.1);
+		{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.1);
+		{Synth.after(~wolfSynth,\scoping, [\buffy, bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
+		{Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
+		{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,0,\amp,8])}.defer(0.1);
 
+		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
+		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
 		//{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
@@ -1166,6 +1190,131 @@ s.doWhenBooted(
 		//.gridOn = true;
 		//.gridResolution = 0.2;
 
+		//panner---------------------------------------------------------------------------
+		for (0, (numOfPoints-1), {
+			arg i;
+			var angle, distance;
+			"cazzi".postln;
+			angle = ~knobPos[i,2].value.linlin(0,1,(-pi/2),(pi/2));
+			"amari".postln;
+			distance = ~knobPos[i,3].value.linlin(0,1,0,(height-10));
+			"ciao".postln;
+			x = (((distance*((angle).sin))+centerPosX)+elRadius);
+			y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+			~knobPos[i,0] = x;
+			~knobPos[i,1] = y;
+		};
+		);
+
+
+		wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
+		.front
+		.alwaysOnTop_(true)
+		//.background_(Color.rand)
+		.drawFunc = {
+			Pen.addRect(wp.view.bounds.insetBy(0))
+			.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
+				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
+			.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
+			.color_(Color.white)
+			.fill
+			//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
+			.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
+			.stroke;
+		};
+
+
+
+		~angPos = Array2D.new(numOfPoints,2);
+		v = UserView(wp,Rect(0,0,width,height));
+
+		v.drawFunc = {
+
+			"CIAO".postln;
+			for (0, (numOfPoints-1), {
+				arg i;
+				var angle, distance,angle01,distance01;
+				//i.postln;
+				//pos.at(i,0).postln;
+				Pen.fillColor = Color.black;
+				Pen.strokeColor = Color.white;
+				//"CIAO1".postln;
+				~knobPos.postln;
+				//Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
+				Pen.drawImage( ((~knobPos[i,0])-17)@((~knobPos[i,1])-17), ~knobPos[i,4], operation: 'sourceOver', opacity:1);
+				//"CIAO2".postln;
+				//angle = ((~knobPos[i,0]-centerPosX)/(~knobPos[i,1]-centerPosY).abs).atan;
+				//angle01 = angle/(pi/2);
+				/*
+				distance = (((~knobPos[i,0]-centerPosX).squared)+((~knobPos[i,1]-centerPosY).squared)).sqrt;
+				distance01 = distance/height;
+				"distance01".postln;
+				distance01.postln;
+				"angle01".postln;
+				angle01.postln;
+				~angPos[i,0] = distance01;
+				~angPos[i,1] = angle01;
+				*/
+				Pen.fillStroke;
+			});
+		};
+
+		v.mouseDownAction = { arg view, x,y, m;
+			//m.postln;
+			([256, 0].includes(m)).if{ // restrict to no modifier
+			//value = (x).linlin(0,v.bounds.width,0,1); v.doAction};
+			var found = false;
+				for (0, numOfPoints-1, {
+				arg i;
+					if((x>=(~knobPos[i,0]-elRadius))&&((x<=(~knobPos[i,0]+elRadius)))&&((y>=(~knobPos[i,1]-elRadius)))&&((y<=(~knobPos[i,1]+elRadius))),{
+						selPos = i;
+						found =true;
+					});
+			});
+				if(found!=true,{selPos= (-1)});
+				selPos.postln
+		};
+		};
+		v.mouseMoveAction = {
+			arg view, x,y, m;
+			var angle,distance;
+			var l = (2*(height-10));
+			var h=(height-10);
+			if(selPos!=(-1),{
+				distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
+				angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
+				if(y>= (h-elRadius), {
+					y=h-elRadius;
+					if(x<=(elRadius),{
+						x= 10+elRadius;
+					});
+					if(x>=(width-elRadius),{
+						x= (width-10-elRadius);
+					});
+				},{
+					if((distance+elRadius)>=(h), {
+					if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
+					if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
+					//x = (((h*((angle).sin))+centerPosX)+elRadius);
+					y = (((h-(h*(angle).cos)))+elRadius);
+					});
+				});
+			distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
+			angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
+			~knobPos[selPos,0] =x;
+			~knobPos[selPos,1] =y;
+			~knobPos[selPos,2].value_(angle.linlin(-pi/2,pi/2,0,1));
+			~knobPos[selPos,3].value_(distance.linlin(0,height-10,0,1));
+			~knobPos[selPos,5].set(\angle,~knobPos[selPos,2].value.linlin(0,1,-1,1));
+			~knobPos[selPos,5].set(\radius,~knobPos[selPos,3].value);
+				//p.set(\angle,~angPos[0,1]);
+				//if((~angPos[0,0]>=1),{~angPos[0,0] = 1});
+				//p.set(\radius,~angPos[0,0]);
+			v.refresh;
+
+			}
+			)
+		};
 });
 )
 
