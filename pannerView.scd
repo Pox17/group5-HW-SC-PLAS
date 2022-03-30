@@ -10,6 +10,20 @@ s.boot;
 ~b3 = Bus.audio(s,2);
 )
 (
+var elRadius = 8,
+xStart=1,
+yStart=1,
+height=400,
+width=400,
+numOfPoints =1,
+pos1D = Array.fill((numOfPoints*2),{10+(180.rand)}).postln,
+pos=Array2D.fromArray(numOfPoints,2,pos1D).postln,
+centerPosX = width/2,
+centerPosY = height,
+selPos = -1;
+~angPos = Array2D.new(numOfPoints,2);
+
+
 SynthDef(\positioner,{
 	arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 	var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
@@ -26,7 +40,7 @@ SynthDef(\positioner,{
 }).add;
 
 SynthDef(\PassettiNeve, {
-	arg out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1;
+	arg outBus, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1;
     var center,sig2,hpf,verb,shf,lpf, sig;
 
 	sig2 = GrainBuf.ar(1,Impulse.ar(speed),0.4,~a,1,0.34,2,0);
@@ -36,9 +50,63 @@ SynthDef(\PassettiNeve, {
 	center = Pan2.ar(shf,0,1);
 	hpf = HPF.ar(center,hpfreq);
 	lpf = LPF.ar(hpf,6000)*20;
-    Out.ar(out,
+    Out.ar(outBus,
 		lpf)
 }).add;
+
+SynthDef(\frog, {
+	arg outBus = 0,
+	grainPos = 0.162215,
+	randomness = 1, // 0.0 - 1.0
+	excited1 = 1,  // 0.5 - 1.7
+	excited2 = 1.7, // 0.5 - 1.7
+	ampFront = 1,
+	ampRear = 1;
+
+	var sig, sig2, mix, out,
+	envPitch,env, buff,
+	trig, trig2;
+
+	buff = ~a;
+	envPitch = EnvGen.kr(Env.perc(1, 3, curve:0));
+	env = EnvGen.kr(Env.perc(0.01, 3));
+	trig = Trig1.ar((LFSaw.ar(0.3*excited2)+LFSaw.ar(1.2*excited2, 0, 0.25) + (LFNoise1.ar(randomness).range(-0.5, 2)*randomness)), 0.3);
+	sig = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Impulse.ar(30 * trig ),
+		dur: 0.01,
+		sndbuf: buff,
+		rate: 5 + EnvGen.kr(Env.asr(0.3, 1, 0.1), gate: trig),
+		pos: grainPos,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: 5,
+		add: 0
+	)*excited2;
+
+	trig2 = Trig1.ar(SinOsc.ar(80), 0.3);
+	sig2 = GrainBuf.ar(
+		numChannels: 1,
+		trigger: Impulse.ar(60 * LFPulse.ar((4*excited1) + LFNoise1.ar(1).bipolar(2), 0, 0.3, 0.5, 0.5)),
+		dur: 0.01,
+		sndbuf: buff,
+		rate: 15 + EnvGen.ar(Env.asr(0.2, 2, 0.2), gate:trig2),
+		pos: 0.553747,
+		interp: 2,
+		pan: 0,
+		envbufnum: -1,
+		maxGrains: 512,
+		mul: 0.3,
+		add: 0
+	)*excited1;
+	mix = Mix([sig, sig2]);
+	out = LPF.ar(mix, 1500);
+	Out.ar(outBus, out);
+}).add;
+
+
 
 
 SynthDef(\impulse,{
@@ -51,72 +119,56 @@ SynthDef(\impulse,{
 
 
 SynthDef(\roomer,{
-	arg inBus, outBus = 0, dimension=0.2, mix=1.0;
-	var input, output,outputL,outputR, rev,yL,yR,zL,zR;
+	arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=1, radius;
+	var input, out,outputL,outputR, rev,yL,yR,zL,zR,
+
+	roomsize = 100,
+	revtime = 4.85,
+	damping = 0.5*(1-radius),
+	inputbw = (1-radius),
+	spread = 10,
+	earlyreflevel = -25,
+	taillevel = -15,
+	maxroomsize = roomsize+1;
 
 	input = In.ar(inBus,2);
 
-	//outputL = FreeVerb.ar(input[0],mix,dimension,0.8);
-	//outputR = FreeVerb.ar(input[1],mix,dimension,0.8);
-
-	outputL = GVerb.ar(input[0], roomsize: 80, revtime: 4.85, damping: 0.3, inputbw: 0.19, spread: 10, drylevel: 0, earlyreflevel: -9, taillevel: -11, maxroomsize: 300, mul: 1, add: 0);
+	outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
 
 
-	outputR = GVerb.ar(input[1], roomsize: 80, revtime: 4.85, damping: 0.3, inputbw: 0.19, spread: 10, drylevel: 0, earlyreflevel: -9, taillevel: -11, maxroomsize: 300, mul: 1, add: 0);
+	outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
 
-	/*
-	    // reverb predelay time :
-	zL = DelayN.ar(input[0], 0.048);
-    // 7 length modulated comb delays in parallel :
-	yL = Mix.ar(Array.fill(7,{ CombL.ar(zL, 0.1, LFNoise1.kr(0.1.rand, 0.04, 0.05), 15) }));
-    // two parallel chains of 4 allpass delays (8 total) :
-	4.do({ outputL = AllpassN.ar(yL, 0.050, [0.050.rand, 0.050.rand], 1) });
-	    // reverb predelay time :
-	zR = DelayN.ar(input[1], 0.048);
-    // 7 length modulated comb delays in parallel :
-	yR = Mix.ar(Array.fill(7,{ CombL.ar(zR, 0.1, LFNoise1.kr(0.1.rand, 0.04, 0.05), 15) }));
-    // two parallel chains of 4 allpass delays (8 total) :
-	4.do({ outputR = AllpassN.ar(yR, 0.050, [0.050.rand, 0.050.rand], 1) });
-	//FreeVerb2.ar(input[0],input[1],mix,dimension);
-	//output = (outputL+outputR)*0.5;
-	*/
+	out = [outputL,outputR];
 
-	Out.ar(outBus,[outputL,outputR]);
-} ).add
-)
+	out = BPF.ar(out, 3000);
+
+
+	Out.ar(outBus,out);
+} ).add;
+
 s.plotTree;
-(
-var elRadius = 8,
-xStart=1,
-yStart=1,
-height=400,
-width=400,
-numOfPoints =1,
-pos1D = Array.fill((numOfPoints*2),{10+(180.rand)}).postln,
-pos=Array2D.fromArray(numOfPoints,2,pos1D).postln,
-centerPosX = width/2,
-centerPosY = height,
-selPos = -1;
-~angPos = Array2D.new(numOfPoints,2);
-w = Window.new("gui",Rect(100,100,(width+(100)),(height+(100)))).front;
+
+
+
+Window.closeAll;
+
+w = Window.new("gui",Rect(100,100,(width+(100)),(height+(100)))).front.alwaysOnTop_(true);
 v = UserView(w,Rect(50,50,height+2,width+2));
 
 r = Routine(
 {
-	i = Synth(\PassettiNeve,[\out,6]);
-	p = Synth.after(i,\positioner,[\inBus,6,\angle,~angPos[0,1],\mainOut,0,\effectOut,8]);
+	i = Synth(\PassettiNeve,[\outBus,6]);
+	p = Synth.after(i,\positioner,[\inBus,6,\angle,~angPos[0,1],\radius,~angPos[0,0],\mainOut,0,\effectOut,8]);
 	//Synth.before(p,\impulse,[\outBus,b]);
-		//j = Synth.after(p,\roomer,[\inBus,8,\outBus,0]);
-	~b2.scope;
-~b3.scope;
+		j = Synth.after(p,\roomer,[\inBus,8,\outBus,0, \radius, ~angPos[0,0]]);
+	//~b2.scope;
+	//~b3.scope;
 	}
 
 
 );
 //i = Synth(\PassettiNeve,[]);
 r.play;
-
-
 
 
 v.drawFunc = {
@@ -150,6 +202,9 @@ v.drawFunc = {
 		//angle01.postln;
 		~angPos[i,0] = distance01;
 		~angPos[i,1] = angle01;
+
+		"distance log".postln;
+		(distance01.log10*20).postln;
 
 		Pen.fillStroke;
 	});
@@ -195,3 +250,7 @@ v.mouseMoveAction = { arg view, x,y, m;
 };
 
 )
+
+
+
+BPF.scopeResponse(s, 1).poll;
