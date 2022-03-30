@@ -350,7 +350,7 @@ s.doWhenBooted(
 			grainPos = 0.22,
 			wood = 1;
 
-			var sig1, sig2, sig3, sig4, mix, out,buff;
+			var sig1, sig2, sig3, sig4, mix, out,buff, trig;
 
 			buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
 
@@ -371,12 +371,13 @@ s.doWhenBooted(
 				add: 0
 			);
 
+			trig = Dust.ar(LFNoise1.ar(wood).range(1, 2));
 			// High sparkles 2
 			sig2 = GrainBuf.ar(
 				numChannels: 1,
 				// trigger: Impulse.ar((3*wood)+LFNoise1.ar(10).bipolar(1)),
-				trigger: Dust.ar(LFNoise1.ar(wood).range(1, 2)),
-				dur: 0.003,
+				trigger: trig,
+				dur: 0.002,
 				sndbuf: buff,
 				rate: 3*LFNoise1.ar(0.2).range(1,2),
 				pos: 0.241694,
@@ -422,10 +423,15 @@ s.doWhenBooted(
 
 			sig3 = LPF.ar(sig4, 4000+SinOsc.ar(0.3).bipolar(50));
 
+			sig2 = FreeVerb.ar(sig2, 0.8, 0.3, 0);
+			sig2 = sig2*EnvGen.ar(Env.perc(0, 0.1), trig);
+			sig2 = PitchShift.ar(sig2, 0.02, 0.5);
+
 			// mix = Mix([sig1, sig2, sig3, sig4]);
 			mix = Mix([sig1, sig2, sig4]);
+			// mix = sig2;
 			out = LPF.ar(mix, 2000);
-			out = HPF.ar(out, 700);
+			out = HPF.ar(out, 500);
 			out = FreeVerb.ar(out);
 			out = Limiter.ar(out, 0.7);
 			Out.ar(outBus, out);
