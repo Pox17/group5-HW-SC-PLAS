@@ -3,6 +3,7 @@ s.boot;
 s.plotTree;
 (
 if(s.hasBooted != true,{s.boot});
+s.freeAll;
 s.doWhenBooted(
 {
 		//VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -429,7 +430,7 @@ s.doWhenBooted(
 			out = Limiter.ar(out, 0.7);
 			Out.ar(outBus, out);
 		}).add;
-		
+
 		SynthDef(\positioner,{
 			arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 			var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
@@ -1043,7 +1044,7 @@ s.doWhenBooted(
 				);
 		});
 
-		{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.1);
+		{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\amp,2])}.defer(0.1);
 		{Synth.after(~wolfSynth,\scoping, [\buffy, bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
 		{Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
 		{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,0,\amp,8])}.defer(0.1);
@@ -1139,8 +1140,8 @@ s.doWhenBooted(
 			"amari".postln;
 			distance = ~knobPos[i,3].value.linlin(0,1,0,(height-10));
 			"ciao".postln;
-			x = (((distance*((angle).sin))+centerPosX)+elRadius);
-			y = ((((height-10)-(distance*(angle).cos)))+elRadius);
+			x = (((distance*((angle).sin))+centerPosX));
+			y = ((((height-10)-(distance*(angle).cos))));
 			~knobPos[i,0] = x;
 			~knobPos[i,1] = y;
 		};
@@ -1152,15 +1153,7 @@ s.doWhenBooted(
 		.alwaysOnTop_(true)
 		//.background_(Color.rand)
 		.drawFunc = {
-			Pen.addRect(wp.view.bounds.insetBy(0))
-			.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
-				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
-			.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
-			.color_(Color.white)
-			.fill
-			//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
-			.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
-			.stroke;
+
 		};
 
 
@@ -1169,7 +1162,17 @@ s.doWhenBooted(
 		v = UserView(wp,Rect(0,0,width,height));
 
 		v.drawFunc = {
-
+			Pen.addRect(wp.view.bounds.insetBy(0))
+			.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
+				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
+			//.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
+			.color_(Color.white)
+			.fill
+			//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
+			.addArc((panWinWidth/2)@(panWinHeight),(20),pi,2pi)
+			.fill
+			.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
+			.stroke;
 			"CIAO".postln;
 			for (0, (numOfPoints-1), {
 				arg i;
@@ -1181,7 +1184,8 @@ s.doWhenBooted(
 				//"CIAO1".postln;
 				~knobPos.postln;
 				//Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
-				Pen.drawImage( ((~knobPos[i,0])-17)@((~knobPos[i,1])-17), ~knobPos[i,4], operation: 'sourceOver', opacity:1);
+				Pen.drawImage( ((~knobPos[i,0])-18)@((~knobPos[i,1])-18), ~knobPos[i,4], operation: 'sourceOver', opacity:1);
+				~knobPos[0,0].postln;
 				//"CIAO2".postln;
 				//angle = ((~knobPos[i,0]-centerPosX)/(~knobPos[i,1]-centerPosY).abs).atan;
 				//angle01 = angle/(pi/2);
@@ -1224,12 +1228,12 @@ s.doWhenBooted(
 				distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
 				angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
 				if(y>= (h-elRadius), {
-					y=h-elRadius;
+					y=h;
 					if(x<=(elRadius),{
-						x= 10+elRadius;
+						x= 10;
 					});
 					if(x>=(width-elRadius),{
-						x= (width-10-elRadius);
+						x= (width-10);
 					});
 				},{
 					if((distance+elRadius)>=(h), {
