@@ -124,8 +124,8 @@ SynthDef(\roomer,{
 
 	roomsize = 100,
 	revtime = 4.85,
-	damping = 0.5*(1-radius),
-	inputbw = (1-radius),
+	damping = 0.5,
+	inputbw = 0.8,
 	spread = 10,
 	earlyreflevel = -25,
 	taillevel = -15,
@@ -157,7 +157,7 @@ v = UserView(w,Rect(50,50,height+2,width+2));
 
 r = Routine(
 {
-	i = Synth(\PassettiNeve,[\outBus,6]);
+	i = Synth(\frog,[\outBus,6]);
 	p = Synth.after(i,\positioner,[\inBus,6,\angle,~angPos[0,1],\radius,~angPos[0,0],\mainOut,0,\effectOut,8]);
 	//Synth.before(p,\impulse,[\outBus,b]);
 		j = Synth.after(p,\roomer,[\inBus,8,\outBus,0, \radius, ~angPos[0,0]]);
