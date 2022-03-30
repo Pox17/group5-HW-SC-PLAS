@@ -241,6 +241,8 @@ s.doWhenBooted(
 			// center = Pan2.ar(shf,0,1);
 			hpf = HPF.ar(shf,hpfreq);
 			lpf = LPF.ar(hpf,6000)*6;
+
+			lpf = lpf*(hpfreq.log10-2000.log10).exp;
 			Out.ar(outBus,lpf);
 		}).add;
 
