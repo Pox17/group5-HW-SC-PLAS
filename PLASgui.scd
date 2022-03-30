@@ -231,17 +231,17 @@ s.doWhenBooted(
 
 		//SYNTHDEFS
 
-		SynthDef(\PassettiNeve, { |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
+		SynthDef(\PassettiNeve, { |outBus, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
 			var center,sig2,hpf,verb,shf,lpf, sig, a;
 			a = Buffer.readChannel(s,~srcPath,channels:[0]);
 			sig2 = GrainBuf.ar(1,Impulse.ar(speed+LFNoise1.ar((0.7*speed)).bipolar(speed/4)),0.4,a,1,0.34,2,0);
 			sig = sig2 * BrownNoise.ar(1,0);
 			verb = FreeVerb.ar(sig,0.2);
 			shf = PitchShift.ar(verb,0.2,0.2);
-			center = Pan2.ar(shf,0,1);
-			hpf = HPF.ar(center,hpfreq);
-			lpf = LPF.ar(hpf,6000)*20;
-			Out.ar(out,lpf);
+			// center = Pan2.ar(shf,0,1);
+			hpf = HPF.ar(shf,hpfreq);
+			lpf = LPF.ar(hpf,6000)*6;
+			Out.ar(outBus,lpf);
 		}).add;
 
 
@@ -296,7 +296,7 @@ s.doWhenBooted(
 			)*excited1;
 
 			mix = Mix([sig, sig2]);
-			out = LPF.ar(mix, 1500);
+			out = LPF.ar(mix, 1500, 0.3);
 
 			Out.ar(outBus, out);
 		}).add;
@@ -316,7 +316,7 @@ s.doWhenBooted(
 
 			buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
 
-			trig = Trig1.ar(LFNoise1.kr(occurence), length+LFNoise1.kr(0.5).range(-1, 0));
+			trig = Trig1.ar(LFNoise1.kr(occurence*2), length+LFNoise1.kr(0.5).range(-1, 0));
 
 			env = EnvGen.kr(Env.adsr(1, 0.5, 1, 2, 0.8, \sin), trig, 1, 0.1);
 			env1 = Env.sine(3.5);
@@ -424,8 +424,6 @@ s.doWhenBooted(
 			sig3 = LPF.ar(sig4, 4000+SinOsc.ar(0.3).bipolar(50));
 
 			sig2 = FreeVerb.ar(sig2, 0.8, 0.3, 0);
-			sig2 = sig2*EnvGen.ar(Env.perc(0, 0.1), trig);
-			sig2 = PitchShift.ar(sig2, 0.02, 0.5);
 
 			// mix = Mix([sig1, sig2, sig3, sig4]);
 			mix = Mix([sig1, sig2, sig4]);
@@ -451,6 +449,25 @@ s.doWhenBooted(
 			Out.ar(mainOut,panMain);
 			Out.ar(effectOut,panEf);
 		}).add;
+
+		SynthDef(\roomer,{
+			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=1, radius;
+			var input, out,outputL,outputR, rev,yL,yR,zL,zR,
+			roomsize = 100,
+			revtime = 4.85,
+			damping = 0.5,
+			inputbw = 0.8,
+			spread = 10,
+			earlyreflevel = -25,
+			taillevel = -15,
+			maxroomsize = roomsize+1;
+			input = In.ar(inBus,2);
+			outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
+			outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
+			out = [outputL,outputR];
+			out = BPF.ar(out, 3000);
+			Out.ar(outBus,out);
+		} ).add;
 
 		SynthDef(\scoping,{
 			arg bus, buffy,outBus=0,amp=1;
@@ -919,7 +936,7 @@ s.doWhenBooted(
 
 
 		~stepBus = Bus.audio(s,1);
-		~stepSynth = Synth.newPaused(\PassettiNeve,[\out,~stepBus]);
+		~stepSynth = Synth.newPaused(\PassettiNeve,[\outBus,~stepBus]);
 		~labelStep = StaticText(w4, Rect(20,0,titleWidth,titleHeight))
 		.string_("Step")
 		.align_(\center)
@@ -962,6 +979,7 @@ s.doWhenBooted(
 		~knobSnowy = Knob(w4, Rect(8*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
 		.mode_(\vert)
+		.value_(2000)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg snowy;
@@ -970,7 +988,7 @@ s.doWhenBooted(
 		});
 
 		~numberboxSnowy = NumberBox(w4, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-		.value_(200)
+		.value_(2000)
 		.align_(\center)
 		.action_({
 			arg snowy;
@@ -1050,16 +1068,20 @@ s.doWhenBooted(
 				);
 		});
 
+		//
+		~effectBus =Bus.audio(s,2);
+		{~roomer= Synth.tail(nil,\roomer,[\inBus,~effectBus,\outBus,0])}.defer(0.3);
+
 		{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\amp,2])}.defer(0.1);
 		{Synth.after(~wolfSynth,\scoping, [\buffy, bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
 		{Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
-		{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,0,\amp,8])}.defer(0.1);
+		{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,0,\amp,50])}.defer(0.1);
 
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
-		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
-		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
-		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
-		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
+		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
+		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
+		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
