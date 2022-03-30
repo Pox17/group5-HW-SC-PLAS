@@ -68,9 +68,9 @@ s.doWhenBooted(
 
 		/*
 		 *rows: 0 fire, 1 wolf, 2 frog, 3 step
-		 *columns: 0 pan Knob, 1 distance Knob, 2 x, 3 y
+		 *columns: 0 pan Knob, 1 distance Knob, 2 x, 3 y, 4 image, 5 positioner
 		 */
-		~knobPos=Array2D.new(4,5);
+		~knobPos=Array2D.new(4,6);
 
 		~scopefire;
 		~scopewolf;
@@ -406,8 +406,23 @@ s.doWhenBooted(
 			out = LPF.ar(mix, 5000);
 			out = HPF.ar(out, 1000);
 			out = Limiter.ar(out, 0.99);
-			Out.ar(outBus, out);
+			Out.ar(outBus, (out));
 
+		}).add;
+
+		SynthDef(\positioner,{
+			arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
+			var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
+
+			efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
+			inGain = (1-(0.95*radius));//1-radius;//1.1-((radius+0.15).log10);
+			input = In.ar(inBus,1); //(1-(radius-0.1));
+			val = input*inGain;
+			valEf = input*efGain; //*(efGain)*(inGain+0.1);
+			panMain = Pan2.ar(val,angle);
+			panEf = Pan2.ar(valEf,angle);
+			Out.ar(mainOut,panMain);
+			Out.ar(effectOut,panEf);
 		}).add;
 
 		SynthDef(\scoping,{
@@ -415,7 +430,7 @@ s.doWhenBooted(
 			var in;
 			in = In.ar(bus,1)*amp;
 			ScopeOut2.ar(in, buffy);
-			Out.ar(outBus,In.ar(bus,1));
+			//Out.ar(outBus,In.ar(bus,1));
 		}).add;
 
 		SynthDef(\s1, {arg bus;
@@ -491,6 +506,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[0,0] = x;
 				~knobPos[0,1] = y;
+				~knobPos[0,5].set(\angle,~knobPos[0,2].value.linlin(0,1,-1,1));
+				~knobPos[0,5].set(\radius,~knobPos[0,3].value);
 				v.refresh;
 		});
 
@@ -515,6 +532,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[0,0] = x;
 				~knobPos[0,1] = y;
+				~knobPos[0,5].set(\angle,~knobPos[0,2].value.linlin(0,1,-1,1));
+				~knobPos[0,5].set(\radius,~knobPos[0,3].value);
 				v.refresh;
 		});
 
@@ -649,6 +668,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[1,0] = x;
 				~knobPos[1,1] = y;
+				~knobPos[1,5].set(\angle,~knobPos[1,2].value.linlin(0,1,-1,1));
+				~knobPos[1,5].set(\radius,~knobPos[1,3].value);
 				v.refresh;
 		});
 
@@ -673,6 +694,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[1,0] = x;
 				~knobPos[1,1] = y;
+				~knobPos[1,5].set(\angle,~knobPos[1,2].value.linlin(0,1,-1,1));
+				~knobPos[1,5].set(\radius,~knobPos[1,3].value);
 				v.refresh;
 		});
 
@@ -814,6 +837,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[2,0] = x;
 				~knobPos[2,1] = y;
+				~knobPos[2,5].set(\angle,~knobPos[2,2].value.linlin(0,1,-1,1));
+				~knobPos[2,5].set(\radius,~knobPos[2,3].value);
 				v.refresh;
 		});
 
@@ -838,6 +863,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[2,0] = x;
 				~knobPos[2,1] = y;
+				~knobPos[2,5].set(\angle,~knobPos[2,2].value.linlin(0,1,-1,1));
+				~knobPos[2,5].set(\radius,~knobPos[2,3].value);
 				v.refresh;
 		});
 
@@ -947,6 +974,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[3,0] = x;
 				~knobPos[3,1] = y;
+				~knobPos[3,5].set(\angle,~knobPos[3,2].value.linlin(0,1,-1,1));
+				~knobPos[3,5].set(\radius,~knobPos[3,3].value);
 				v.refresh;
 		});
 
@@ -971,6 +1000,8 @@ s.doWhenBooted(
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[3,0] = x;
 				~knobPos[3,1] = y;
+				~knobPos[3,5].set(\angle,~knobPos[3,2].value.linlin(0,1,-1,1));
+				~knobPos[3,5].set(\radius,~knobPos[3,3].value);
 				v.refresh;
 		});
 
@@ -992,11 +1023,17 @@ s.doWhenBooted(
 				);
 		});
 
-		{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\outBus,0,\amp,8])}.defer(0.1);
-		{Synth.after(~wolfSynth,\scoping, [\buffy, bufWolf.bufnum, \bus, ~wolfBus,\outBus,0,\amp,8])}.defer(0.1);
-		{Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\outBus,0,\amp,8])}.defer(0.1);
-		{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,\outBus,0,\amp,8])}.defer(0.1);
+		{Synth.after(~fireSynth,\scoping, [\buffy, bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.1);
+		{Synth.after(~wolfSynth,\scoping, [\buffy, bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
+		{Synth.after(~frogSynth,\scoping, [\buffy, bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
+		{Synth.after(~stepSynth,\scoping, [\buffy, bufStep.bufnum, \bus, ~stepBus,0,\amp,8])}.defer(0.1);
 
+		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
+		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value])}.defer(0.2);
+		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
 		//{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
@@ -1188,6 +1225,8 @@ s.doWhenBooted(
 			~knobPos[selPos,1] =y;
 			~knobPos[selPos,2].value_(angle.linlin(-pi/2,pi/2,0,1));
 			~knobPos[selPos,3].value_(distance.linlin(0,height-10,0,1));
+			~knobPos[selPos,5].set(\angle,~knobPos[selPos,2].value.linlin(0,1,-1,1));
+			~knobPos[selPos,5].set(\radius,~knobPos[selPos,3].value);
 				//p.set(\angle,~angPos[0,1]);
 				//if((~angPos[0,0]>=1),{~angPos[0,0] = 1});
 				//p.set(\radius,~angPos[0,0]);
