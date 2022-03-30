@@ -438,18 +438,20 @@ s.doWhenBooted(
 		}).add;
 
 		SynthDef(\positioner,{
-			arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
-			var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
+			arg inBus=0, mainOut=0, effectOut, angle = 0, radius = 0 ;
+			var val,valEf, input,effect, output, panMain,panEf, dbStart=40, inGain,efGain;
 
-			inGain = (0-radius*2).exp;
-			efGain = (0.2+(0.05*inGain));
+			// inGain = (0-radius*2).exp;
+			inGain = dbStart-(20*((radius+0.01)*50).log10)-11;
+			inGain = inGain.dbamp;
+			efGain = (0.1+(0.1*inGain));
 			// efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
 			// inGain = (1-((0.95*radius - 1)*5).exp);
 			input = In.ar(inBus,1); //(1-(radius-0.1));
 			val = input*inGain;
 			valEf = input*efGain; //*(efGain)*(inGain+0.1);
 			panMain = Pan2.ar(val,angle);
-			panEf = Pan2.ar(valEf,angle);
+			panEf = Pan2.ar(valEf,angle);♣
 			Out.ar(mainOut,panMain);
 			Out.ar(effectOut,panEf);
 		}).add;
