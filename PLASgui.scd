@@ -277,7 +277,7 @@ s.doWhenBooted(
 				pan: 0,
 				envbufnum: -1,
 				maxGrains: 512,
-				mul: 5,
+				mul: 2.5,
 				add: 0
 			)*excited2;
 
@@ -318,7 +318,7 @@ s.doWhenBooted(
 
 			buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
 
-			trig = Trig1.ar(LFNoise1.kr(occurence*2), length+LFNoise1.kr(0.5).range(-1, 0));
+			trig = Trig1.ar(LFNoise1.kr(occurence*3), length+LFNoise1.kr(0.5).range(-1, 0));
 
 			env = EnvGen.kr(Env.adsr(1, 0.5, 1, 2, 0.8, \sin), trig, 1, 0.1);
 			env1 = Env.sine(3.5);
@@ -441,8 +441,10 @@ s.doWhenBooted(
 			arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 			var val,valEf, input,effect, output, panMain,panEf, inGain,efGain;
 
-			efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
-			inGain = (1-(0.95*radius));//1-radius;//1.1-((radius+0.15).log10);
+			inGain = (0-radius*2).exp;
+			efGain = (0.2+(0.05*inGain));
+			// efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
+			// inGain = (1-((0.95*radius - 1)*5).exp);
 			input = In.ar(inBus,1); //(1-(radius-0.1));
 			val = input*inGain;
 			valEf = input*efGain; //*(efGain)*(inGain+0.1);
