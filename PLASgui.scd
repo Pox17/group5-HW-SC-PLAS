@@ -116,7 +116,7 @@ s.doWhenBooted(
 		// main
 		w = Window.new("PLASgui",Rect(winRL,winUpDown,winWidth,winHeight), false)
 		.front
-		.alwaysOnTop_(true)
+		.alwaysOnTop_(false)
 		.onClose_({
 			Window.closeAll;
 			s.freeAll;
@@ -286,15 +286,29 @@ s.doWhenBooted(
 		w6 = CompositeView(w,Rect(750,(4*marg)+(3*sectWinHeight),sectWinHeight,sectWinHeight));
 		v6 = UserView(w,Rect(750,(4*marg)+(3*sectWinHeight),sectWinHeight,sectWinHeight));
 		v6.drawFunc_({
+			var radius = (sectWinHeight/2)-10;
 			Pen.addRect(Rect(0,0,sectWinHeight,sectWinHeight))
 			.fillRadialGradient(((sectWinHeight/2))@((sectWinHeight)),(sectWinHeight/2)@(sectWinHeight),30,200,
 				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
 			.stroke
-			.addArc(((sectWinHeight/2))@((sectWinHeight)),10,pi,2pi)
+			.addArc(((sectWinHeight/2))@((sectWinHeight)),5,pi,2pi)
 			.color_(Color.white)
 			.fill;
 
-			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),(sectWinHeight/2)-10,pi,2pi)
+			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius,pi,2pi)
+			.strokeColor_(Color.white)
+			.stroke;
+
+			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius/4*3,pi,2pi)
+			.strokeColor_(Color.white)
+			.stroke;
+
+
+			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius/2,pi,2pi)
+			.strokeColor_(Color.white)
+			.stroke;
+
+			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius/4,pi,2pi)
 			.strokeColor_(Color.white)
 			.stroke;
 
@@ -542,7 +556,7 @@ s.doWhenBooted(
 			var val,valEf, input,effect, output, panMain,panEf, dbStart=20, inGain,efGain, dBatt;
 
 			// inGain = (0-radius*2).exp;
-			dBatt = 20 * (1/(radius.linlin(0,1,1,50))).log10;
+			dBatt = 20 * (1/(radius.linlin(0,1,1,30))).log10;
 			dBatt.postln;
 			inGain = dbStart+dBatt;
 			inGain = inGain.dbamp;
@@ -581,7 +595,7 @@ s.doWhenBooted(
 				earlyreflevel: earlyreflevel.dbamp,
 				taillevel: taillevel.dbamp,
 				/*maxroomsize: maxroomsize,*/
-				mul: amp,
+				mul: 1,
 				add: 0
 
 			);
@@ -596,7 +610,7 @@ s.doWhenBooted(
 				earlyreflevel: earlyreflevel.dbamp,
 				taillevel: taillevel.dbamp,
 				/*maxroomsize: maxroomsize,*/
-				mul: amp,
+				mul: 1,
 				add: 0
 
 			);
@@ -1333,7 +1347,7 @@ s.doWhenBooted(
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg eref;
-			~roomer.set(\earlyreflevel,~knobDamp.value.linlin(0,1,-40,5));
+			~roomer.set(\earlyreflevel,~knobEref.value.linlin(0,1,-40,5));
 
 		});
 
@@ -1346,12 +1360,12 @@ s.doWhenBooted(
 
 		~knobLvl = Knob(w5, Rect(5.5*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
-		.value_(9.log10-1)
+		.value_(0.5)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg lvl;
-			~roomer.set(\amp,~knobRoom.value.linexp(0,1,-80,10));
+			~roomer.set(\amp,~knobLvl.value.linlin(0,1,-18,18));
 		});
 
 		//	~roomer.set(\amp, lvl.log10*20);
