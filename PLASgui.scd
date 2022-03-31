@@ -127,6 +127,7 @@ s.doWhenBooted(
 			~wolfBus.free;
 			~frogBus.free;
 			~stepBus.free;
+			~updateIndicatorR.stop;
 		})
 		/*.acceptsMouseOver_(true)
 		.mouseOverAction_({
@@ -437,7 +438,7 @@ s.doWhenBooted(
 				add: 0
 		)*(0.8 + LFNoise1.kr(10).bipolar(0.1))*env;
 
-			lpf = LPF.ar(sig, 900);
+			lpf = LPF.ar(sig, 900)/2;
 
 			Out.ar(outBus, lpf);
 
@@ -585,6 +586,21 @@ s.doWhenBooted(
 
 		}).add;
 
+		SynthDef(\stereoMonitor,{
+			arg inBus=0,krBus;
+			var input,ampL,ampR;
+			input =In.ar(inBus,2);
+			ampL = Amplitude.kr(input[0]);
+			ampR = Amplitude.kr(input[1]);// track the signal's amplitude
+			Out.kr(krBus, [ampL,ampR]);  // write amplitude data to control bus
+		}).add;
+
+		SynthDef(\stereoMaster,{
+			arg inBus,outBus,amp=1;
+			var in = In.ar(inBus,2);
+
+			Out.ar(outBus,in*amp);
+		}).add;
 		// LABEL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		~labeltitle = StaticText(w, Rect((winWidth/2)-(200/2),15,200,titleHeight))
@@ -684,7 +700,7 @@ s.doWhenBooted(
 				v.refresh;
 		});
 
-		Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
+		~b1 = Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
 			["PLAY", Color.black, Color.fromHexString("#78cdd7")],
 			["STOP",Color.white, Color.red(0.5)]
@@ -846,7 +862,7 @@ s.doWhenBooted(
 				v.refresh;
 		});
 
-		Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
+		~b2 = Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
 			["PLAY", Color.black, Color.fromHexString("#78cdd7")],
 			["STOP",Color.white, Color.red(0.5)]
@@ -1015,7 +1031,7 @@ s.doWhenBooted(
 				v.refresh;
 		});
 
-		Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
+		~b3 = Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
 			["PLAY", Color.black, Color.fromHexString("#78cdd7")],
 			["STOP",Color.white, Color.red(0.5)]
@@ -1186,7 +1202,7 @@ s.doWhenBooted(
 		])
 		.action_(
 			{
-				if(playall.value == 0,
+				if(playall == 0,
 					{
 						~fireSynth.run(false);
 						~wolfSynth.run(false);
@@ -1300,34 +1316,15 @@ s.doWhenBooted(
 		});
 		*/
 
+		//{
+		//SendReply.kr(imp, '/levels', [Amplitude.kr(colum), K2A.ar(Peak.ar(colum, delimp).lag(0, 3))]);
+		//ampL = Amplitude.ar(0);
+		//ampR = Amplitude.ar(1);
 
-		~meter = LevelIndicator.new(w5, Rect(50,327,70,sectWinHeight-30))
-		.background_(Color.white);
-		/*
-		.warning_(0.5)
-    .critical_(0.7)
- )
-    .numTicks_(10)
-    .numMajorTicks_(0)
-    .drawsPeak_(true);
 
-  ~updateIndicatorR = fork{loop{
-    ~fireBus.get({
-      arg value;
-      {meter.value_(value[0]);
-        meter.peakLevel_(value[0]);
-      }.defer();
-    });
-        0.05.wait;
-      }};
-  w.onClose_({
-    ~updateIndicatorL.stop;
-  });
-
-		*/
 		~effectBus =Bus.audio(s,2);
 		{~roomer= Synth.tail(nil,\roomer,[\inBus,~effectBus,\outBus,0])}.defer(0.3);
-
+		{~stereoMaster = Synth.before(~stereoMonitor,\stereoMaster,[\inBus,0,\outBus,0,\amp,1])}.defer(0.4);
 		{Synth.after(~fireSynth,\scoping, [\buffy, ~bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.1);
 		{Synth.after(~wolfSynth,\scoping, [\buffy, ~bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
 		{Synth.after(~frogSynth,\scoping, [\buffy, ~bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
@@ -1338,6 +1335,31 @@ s.doWhenBooted(
 		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[1,3].value,\effectOut,~effectBus])}.defer(0.2);
 		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[2,3].value,\effectOut,~effectBus])}.defer(0.2);
 		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[3,3].value,\effectOut,~effectBus])}.defer(0.2);
+
+
+		~krBus = Bus.control(s,2);
+		{~stereoMonitor = Synth.after(~roomer,\stereoMonitor,[\inBus,0,\krBus,~krBus]);
+		~meter = LevelIndicator.new(w5, Rect(50,327,70,sectWinHeight-30))
+		.background_(Color.white)
+		.warning_(0.5)
+		.critical_(0.7)
+		.numTicks_(10)
+		.numMajorTicks_;
+		//.drawsPeak_(true);
+		~updateIndicatorR = fork{loop{
+			~krBus.get({
+				arg value;
+				{
+					value[0].postln;
+					~meter.value_(value[0]);
+						//~meter.peakLevel_(value[0]);
+				}.defer();
+			});
+			0.01.wait;
+		}};
+		}.defer(0.5);
+
+
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
