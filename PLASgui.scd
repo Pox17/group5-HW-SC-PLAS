@@ -127,7 +127,7 @@ s.doWhenBooted(
 			~wolfBus.free;
 			~frogBus.free;
 			~stepBus.free;
-			~updateIndicatorR.stop;
+			~updateIndicator.stop;
 		})
 		/*.acceptsMouseOver_(true)
 		.mouseOverAction_({
@@ -555,7 +555,7 @@ s.doWhenBooted(
 		}).add;
 
 		SynthDef(\roomer,{
-			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=1, radius;
+			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=0, radius;
 			var input, out,outputL,outputR, rev,yL,yR,zL,zR,
 			roomsize = 100,
 			revtime = 4.85,
@@ -566,10 +566,10 @@ s.doWhenBooted(
 			taillevel = -15,
 			maxroomsize = roomsize+1;
 			input = In.ar(inBus,2);
-			outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
-			outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
+			outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: 1, add: 0);
+			outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: 1, add: 0);
 			out = [outputL,outputR];
-			out = BPF.ar(out, 3000);
+			out = BPF.ar(out, 3000)*(amp).dbamp;
 			Out.ar(outBus,out);
 		} ).add;
 
@@ -1098,7 +1098,7 @@ s.doWhenBooted(
 		~knobSnowy = Knob(w4, Rect(8*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
 		.mode_(\vert)
-		.value_(2000)
+		.value_(1)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg snowy;
@@ -1221,7 +1221,7 @@ s.doWhenBooted(
 		});
 
 
-		~knobLabelDamp = StaticText(w5, Rect(1.2*knobIntraDist,110,2*knobDim,30))
+		~knobLabelReverb = StaticText(w5, Rect(1.2*knobIntraDist,110,2*knobDim,30))
 		.string_("Reverb")
 		.align_(\center)
 		.font_(Font("arial", 18).boldVariant)
@@ -1230,14 +1230,15 @@ s.doWhenBooted(
 
 		~knobRoom = Knob(w5, Rect(0.7*knobIntraDist,160,knobDim,knobDim))
 		.color_(~colors)
+		.value_(100/(300-20))
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		/*
+		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
-			arg ;
+			arg room;
+			~roomer.set(\roomsize,~knobRoom.value.linlin(0,1,20,300));
 
 		});
-		*/
+
 		~knobLabelRoom = StaticText(w5, Rect(0.7*knobIntraDist,125,knobDim,knobDim))
 		.string_("Room")
 		.align_(\center)
@@ -1247,14 +1248,14 @@ s.doWhenBooted(
 
 		~knobDamp = Knob(w5, Rect(5.5*knobIntraDist,160,knobDim,knobDim))
 		.color_(~colors)
+		.value_(0.5)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		/*
+		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
-			arg ;
+			arg damp;
+			~roomer.set(\damping,~knobDamp.value.linlin(0,1,0,1));
 
 		});
-		*/
 		~knobLabelDamp = StaticText(w5, Rect(5.5*knobIntraDist,125,knobDim,knobDim))
 		.string_("Damp")
 		.align_(\center)
@@ -1264,14 +1265,15 @@ s.doWhenBooted(
 
 		~knobEref = Knob(w5, Rect(0.7*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
+		.value_(1/3)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		/*
+		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
-			arg ;
+			arg eref;
+			~roomer.set(\earlyreflevel,~knobDamp.value.linlin(0,1,-40,5));
 
 		});
-		*/
+
 
 		~knobLabelEref = StaticText(w5, Rect(0.7*knobIntraDist,205,knobDim,knobDim))
 		.string_("E.Ref")
@@ -1281,14 +1283,14 @@ s.doWhenBooted(
 
 		~knobLvl = Knob(w5, Rect(5.5*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
+		.value_(9.log10-1)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		/*
+		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
-			arg ;
-
+			arg lvl;
+			 ~roomer.set(\amp,~knobRoom.value.linexp(0,1,-80,10));
 		});
-		*/
+
 
 		~knobLabelLvl = StaticText(w5, Rect(5.5*knobIntraDist,205,knobDim,knobDim))
 		.string_("Lvl")
@@ -1339,19 +1341,38 @@ s.doWhenBooted(
 
 		~krBus = Bus.control(s,2);
 		{~stereoMonitor = Synth.after(~roomer,\stereoMonitor,[\inBus,0,\krBus,~krBus]);
-		~meter = LevelIndicator.new(w5, Rect(50,327,70,sectWinHeight-30))
-		.background_(Color.white)
-		.warning_(0.5)
-		.critical_(0.7)
-		.numTicks_(10)
-		.numMajorTicks_;
+		~meterL = LevelIndicator.new(w5, Rect(50,327,30,sectWinHeight-30))
+		.background_(Color.fromHexString("#028090"))
+		.warning_(0.6)
+		.drawsPeak_(true)
+		.meterColor_(Color.fromHexString("#78cdd7"))
+		.warningColor_(Color.fromHexString("#258de8"))
+		.criticalColor_(Color.fromHexString("#02427a"))
+		.critical_(0.8)
+		.numTicks_(0)
+		.style_(\led)
+		.numSteps_(20);
+
+		~meterR = LevelIndicator.new(w5, Rect(85,327,30,sectWinHeight-30))
+		.background_(Color.fromHexString("#028090"))
+		.warning_(0.6)
+		.drawsPeak_(true)
+		.meterColor_(Color.fromHexString("#78cdd7"))
+		.warningColor_(Color.fromHexString("#258de8"))
+		.criticalColor_(Color.fromHexString("#02427a"))
+		.critical_(0.8)
+		.numTicks_(0)
+		.style_(\led)
+		.numSteps_(20);
+
 		//.drawsPeak_(true);
-		~updateIndicatorR = fork{loop{
+		~updateIndicator = fork{loop{
 			~krBus.get({
 				arg value;
 				{
-					value[0].postln;
-					~meter.value_(value[0]);
+					//value[0].postln;
+					~meterL.value_(value[0]);
+					~meterR.value_(value[1]);
 						//~meter.peakLevel_(value[0]);
 				}.defer();
 			});
