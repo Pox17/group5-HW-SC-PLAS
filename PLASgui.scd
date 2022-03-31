@@ -530,7 +530,7 @@ s.doWhenBooted(
 			// mix = sig2;
 			out = LPF.ar(mix, 2000);
 			out = HPF.ar(out, 500);
-			out = FreeVerb.ar(out);
+			out = FreeVerb.ar(out, 0.1);
 			out = Limiter.ar(out, 0.7);
 			Out.ar(outBus, out);
 		}).add;
@@ -566,8 +566,36 @@ s.doWhenBooted(
 			taillevel = -15,
 			maxroomsize = roomsize+1;
 			input = In.ar(inBus,2);
-			outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
-			outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
+			outputL = GVerb.ar(
+				input[0],
+				roomsize:roomsize ,
+				revtime: revtime,
+				damping: damping,
+				inputbw: inputbw,
+				spread: spread,
+				drylevel: 0.dbamp,
+				earlyreflevel: earlyreflevel.dbamp,
+				taillevel: taillevel.dbamp,
+				/*maxroomsize: maxroomsize,*/
+				mul: amp,
+				add: 0
+
+			);
+			outputR = GVerb.ar(
+				input[1],
+				roomsize: roomsize,
+				revtime: revtime,
+				damping: damping,
+				inputbw: inputbw,
+				spread: spread,
+				drylevel: 0.dbamp,
+				earlyreflevel: earlyreflevel.dbamp,
+				taillevel: taillevel.dbamp,
+				/*maxroomsize: maxroomsize,*/
+				mul: amp,
+				add: 0
+
+			);
 			out = [outputL,outputR];
 			out = BPF.ar(out, 3000);
 			Out.ar(outBus,out);
@@ -596,8 +624,11 @@ s.doWhenBooted(
 		}).add;
 
 		SynthDef(\stereoMaster,{
-			arg inBus,outBus,amp=1;
+			arg inBus,outBus,amp=1, ratio=4;
+
 			var in = In.ar(inBus,2);
+			//compression
+			in = Compander.ar(in, in, (-10).dbamp, 1, 1/ratio, 0.01, 0.05);
 
 			Out.ar(outBus,in*amp);
 		}).add;
@@ -1283,12 +1314,10 @@ s.doWhenBooted(
 		.color_(~colors)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"));
-		/*
 		.action_({
-			arg ;
-
+			arg lvl;
+			~roomer.set(\amp, lvl.log10*20);
 		});
-		*/
 
 		~knobLabelLvl = StaticText(w5, Rect(5.5*knobIntraDist,205,knobDim,knobDim))
 		.string_("Lvl")
