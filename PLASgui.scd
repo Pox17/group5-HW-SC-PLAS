@@ -1,5 +1,7 @@
 s.boot;
 
+
+
 s.plotTree;
 (
 
@@ -116,6 +118,7 @@ s.doWhenBooted(
 		// main
 		w = Window.new("PLASgui",Rect(winRL,winUpDown,winWidth,winHeight), false)
 		.front
+		.alwaysOnTop_(true)
 		.onClose_({
 			Window.closeAll;
 			s.freeAll;
@@ -416,9 +419,10 @@ s.doWhenBooted(
 
 			buff = Buffer.readChannel(s, ~srcPath, channels:[0]);
 
-			trig = Trig1.ar(LFNoise1.kr(occurence*3), length+LFNoise1.kr(0.5).range(-1, 0));
+			// trig = Trig1.ar(LFNoise1.kr(occurence*3), length+LFNoise1.kr(0.5).range(-1, 0));
+			trig = Trig1.ar(LFSaw.kr(occurence/2, 1), length + LFNoise1.kr(3).range(-2, 0));
 
-			env = EnvGen.kr(Env.adsr(1, 0.5, 1, 2, 0.8, \sin), trig, 1, 0.1);
+			env = EnvGen.kr(Env.adsr(1, 0.5, 1, 1.7, 0.8, \sin), trig, 1, 0.1);
 			env1 = Env.sine(3.5);
 			envgen1= EnvGen.kr(env1, trig);
 
@@ -530,17 +534,19 @@ s.doWhenBooted(
 			// mix = sig2;
 			out = LPF.ar(mix, 2000);
 			out = HPF.ar(out, 500);
-			out = FreeVerb.ar(out);
+			out = FreeVerb.ar(out, 0.1);
 			out = Limiter.ar(out, 0.7);
 			Out.ar(outBus, out);
 		}).add;
 
 		SynthDef(\positioner,{
 			arg inBus=0, mainOut=0, effectOut, angle = 0, radius = 0 ;
-			var val,valEf, input,effect, output, panMain,panEf, dbStart=40, inGain,efGain;
+			var val,valEf, input,effect, output, panMain,panEf, dbStart=20, inGain,efGain, dBatt;
 
 			// inGain = (0-radius*2).exp;
-			inGain = dbStart-(20*((radius+0.01)*50).log10)-11;
+			dBatt = 20 * (1/(radius.linlin(0,1,1,50))).log10;
+			dBatt.postln;
+			inGain = dbStart+dBatt;
 			inGain = inGain.dbamp;
 			efGain = (0.1+(0.1*inGain));
 			// efGain = (0.2+(0.1*radius));//(((radius+0.5).log10)+0.1)*0.8;
@@ -566,8 +572,36 @@ s.doWhenBooted(
 			taillevel = -15,
 			maxroomsize = roomsize+1;
 			input = In.ar(inBus,2);
-			outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
-			outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
+			outputL = GVerb.ar(
+				input[0],
+				roomsize:roomsize ,
+				revtime: revtime,
+				damping: damping,
+				inputbw: inputbw,
+				spread: spread,
+				drylevel: 0.dbamp,
+				earlyreflevel: earlyreflevel.dbamp,
+				taillevel: taillevel.dbamp,
+				/*maxroomsize: maxroomsize,*/
+				mul: amp,
+				add: 0
+
+			);
+			outputR = GVerb.ar(
+				input[1],
+				roomsize: roomsize,
+				revtime: revtime,
+				damping: damping,
+				inputbw: inputbw,
+				spread: spread,
+				drylevel: 0.dbamp,
+				earlyreflevel: earlyreflevel.dbamp,
+				taillevel: taillevel.dbamp,
+				/*maxroomsize: maxroomsize,*/
+				mul: amp,
+				add: 0
+
+			);
 			out = [outputL,outputR];
 			out = BPF.ar(out, 3000);
 			Out.ar(outBus,out);
@@ -596,8 +630,11 @@ s.doWhenBooted(
 		}).add;
 
 		SynthDef(\stereoMaster,{
-			arg inBus,outBus,amp=1;
+			arg inBus,outBus,amp=1, ratio=4;
+
 			var in = In.ar(inBus,2);
+			//compression
+			in = Compander.ar(in, in, (-10).dbamp, 1, 1/ratio, 0.01, 0.05);
 
 			Out.ar(outBus,in*amp);
 		}).add;
@@ -1282,13 +1319,11 @@ s.doWhenBooted(
 		~knobLvl = Knob(w5, Rect(5.5*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
 		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"));
-		/*
+		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
-			arg ;
-
+			arg lvl;
+			~roomer.set(\amp, lvl.log10*20);
 		});
-		*/
 
 		~knobLabelLvl = StaticText(w5, Rect(5.5*knobIntraDist,205,knobDim,knobDim))
 		.string_("Lvl")
@@ -1324,7 +1359,7 @@ s.doWhenBooted(
 
 		~effectBus =Bus.audio(s,2);
 		{~roomer= Synth.tail(nil,\roomer,[\inBus,~effectBus,\outBus,0])}.defer(0.3);
-		{~stereoMaster = Synth.before(~stereoMonitor,\stereoMaster,[\inBus,0,\outBus,0,\amp,1])}.defer(0.4);
+		{~stereoMaster = Synth.after(~roomer,\stereoMaster,[\inBus,0,\outBus,0,\amp,1])}.defer(0.4);
 		{Synth.after(~fireSynth,\scoping, [\buffy, ~bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.1);
 		{Synth.after(~wolfSynth,\scoping, [\buffy, ~bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
 		{Synth.after(~frogSynth,\scoping, [\buffy, ~bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
@@ -1338,7 +1373,7 @@ s.doWhenBooted(
 
 
 		~krBus = Bus.control(s,2);
-		{~stereoMonitor = Synth.after(~roomer,\stereoMonitor,[\inBus,0,\krBus,~krBus]);
+		{~stereoMonitor = Synth.after(~stereoMaster,\stereoMonitor,[\inBus,0,\krBus,~krBus]);
 		~meter = LevelIndicator.new(w5, Rect(50,327,70,sectWinHeight-30))
 		.background_(Color.white)
 		.warning_(0.5)
@@ -1350,7 +1385,7 @@ s.doWhenBooted(
 			~krBus.get({
 				arg value;
 				{
-					value[0].postln;
+						// value[0].postln;
 					~meter.value_(value[0]);
 						//~meter.peakLevel_(value[0]);
 				}.defer();
@@ -1478,6 +1513,12 @@ s.doWhenBooted(
 			.addArc((panWinWidth/2)@(panWinHeight),(20),pi,2pi)
 			.fill
 			.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
+			.stroke
+			.addArc((panWinWidth/2)@(panWinHeight),(height-10)/4*3,pi,2pi)
+			.stroke
+			.addArc((panWinWidth/2)@(panWinHeight),(height-10)/4,pi,2pi)
+			.stroke
+			.addArc((panWinWidth/2)@(panWinHeight),(height-10)/2,pi,2pi)
 			.stroke;
 			"CIAO".postln;
 			for (0, (numOfPoints-1), {
