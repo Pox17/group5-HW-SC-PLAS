@@ -238,6 +238,8 @@ s.doWhenBooted(
 				w.refresh;
 		});});
 
+		/*
+
 
 		Button.new(w, Rect(winWidth-20,5,15,15))
 		.states_([
@@ -263,6 +265,7 @@ s.doWhenBooted(
 			["", Color.black, Color.fromHexString("#78cdd7")],
 			["",Color.white, Color.white(1.0)]
 		]);
+		*/
 
 
 
@@ -297,22 +300,34 @@ s.doWhenBooted(
 
 			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius,pi,2pi)
 			.strokeColor_(Color.white)
+			.alpha_(0.5)
 			.stroke;
 
 			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius/4*3,pi,2pi)
 			.strokeColor_(Color.white)
+			.alpha_(0.4)
 			.stroke;
 
 
 			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius/2,pi,2pi)
 			.strokeColor_(Color.white)
+			.alpha_(0.3)
 			.stroke;
 
 			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius/4,pi,2pi)
 			.strokeColor_(Color.white)
+			.alpha_(0.2)
 			.stroke;
 
 		});
+
+		v6.mouseDownAction = {
+		arg view, x,y, m;
+			//var vis;
+
+			if(wp.visible == true, {wp.visible=false},{wp.visible=true});
+			"ciaoooo".postln;
+	};
 
 
 
