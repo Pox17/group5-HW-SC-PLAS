@@ -125,7 +125,7 @@ s.doWhenBooted(
 			~wolfBus.free;
 			~frogBus.free;
 			~stepBus.free;
-			~updateIndicatorR.stop;
+			~updateIndicator.stop;
 		})
 		/*.acceptsMouseOver_(true)
 		.mouseOverAction_({
@@ -553,7 +553,7 @@ s.doWhenBooted(
 		}).add;
 
 		SynthDef(\roomer,{
-			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=1, radius;
+			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=0, radius;
 			var input, out,outputL,outputR, rev,yL,yR,zL,zR,
 			roomsize = 100,
 			revtime = 4.85,
@@ -564,10 +564,10 @@ s.doWhenBooted(
 			taillevel = -15,
 			maxroomsize = roomsize+1;
 			input = In.ar(inBus,2);
-			outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
-			outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: amp, add: 0);
+			outputL = GVerb.ar(input[0], roomsize:roomsize , revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: 1, add: 0);
+			outputR = GVerb.ar(input[1], roomsize: roomsize, revtime: revtime, damping: damping, inputbw: inputbw, spread: spread, drylevel: 0.dbamp, earlyreflevel: earlyreflevel.dbamp, taillevel: taillevel.dbamp, /*maxroomsize: maxroomsize,*/ mul: 1, add: 0);
 			out = [outputL,outputR];
-			out = BPF.ar(out, 3000);
+			out = BPF.ar(out, 3000)*(amp).dbamp;
 			Out.ar(outBus,out);
 		} ).add;
 
@@ -1119,7 +1119,7 @@ s.doWhenBooted(
 		~knobSnowy = Knob(w4, Rect(8*knobIntraDist,50,knobDim,knobDim))
 		.color_(~colors)
 		.mode_(\vert)
-		.value_(2000)
+		.value_(1)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg snowy;
@@ -1205,8 +1205,7 @@ s.doWhenBooted(
 					},
 					{
 						~stepSynth.run(true);
-						~b5.value_(1);
-				});
+						});
 				sum = ~b1.value+~b2.value+~b3.value+~b4.value;
 				if(sum>0, {
 					~b5.value_(1)
