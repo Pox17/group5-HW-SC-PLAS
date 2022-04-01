@@ -608,7 +608,8 @@ s.doWhenBooted(
 			out = LPF.ar(mix, 2000);
 			out = HPF.ar(out, 500);
 			out = FreeVerb.ar(out, 0.1);
-			out = Limiter.ar(out, 0.7);
+			// out = Limiter.ar(out, 0.7);
+			out = Compander.ar(out, out, (-6).dbamp, 1, 1/5, 0.001, 0.2);
 			Out.ar(outBus, out);
 		}).add;
 
@@ -642,7 +643,7 @@ s.doWhenBooted(
 			inputbw = 0.8,
 			spread = 10,
 			earlyreflevel = -25,
-			taillevel = -15+(amp/1.5),
+			taillevel = -15+(amp/2),
 			maxroomsize = roomsize+1;
 			input = In.ar(inBus,2);
 			outputL = GVerb.ar(
@@ -1494,10 +1495,10 @@ s.doWhenBooted(
 		~effectBus =Bus.audio(s,2);
 		{~roomer= Synth.tail(nil,\roomer,[\inBus,~effectBus,\outBus,0])}.defer(0.3);
 		{~stereoMaster = Synth.after(~roomer,\stereoMaster,[\inBus,0,\outBus,0,\amp,1])}.defer(0.4);
-		{Synth.after(~fireSynth,\scoping, [\buffy, ~bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.1);
-		{Synth.after(~wolfSynth,\scoping, [\buffy, ~bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
-		{Synth.after(~frogSynth,\scoping, [\buffy, ~bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
-		{Synth.after(~stepSynth,\scoping, [\buffy, ~bufStep.bufnum, \bus, ~stepBus,\amp,8])}.defer(0.1);
+		{Synth.after(~fireSynth,\scoping, [\buffy, ~bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.18);
+		{Synth.after(~wolfSynth,\scoping, [\buffy, ~bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.18);
+		{Synth.after(~frogSynth,\scoping, [\buffy, ~bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.18);
+		{Synth.after(~stepSynth,\scoping, [\buffy, ~bufStep.bufnum, \bus, ~stepBus,\amp,8])}.defer(0.18);
 
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
@@ -1815,5 +1816,6 @@ s.doWhenBooted(
 });
 )
 
+s.plotTree
 ~wp.isClosed.postln
 ~wp.postln
