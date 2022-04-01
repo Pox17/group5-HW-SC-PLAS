@@ -77,7 +77,8 @@ s.doWhenBooted(
 		*rows: 0 fire, 1 wolf, 2 frog, 3 step
 		*columns: 0 pan Knob, 1 distance Knob, 2 x, 3 y, 4 image, 5 positioner
 		*/
-		~knobPos=Array2D.new(4,6);
+		~wpBool;
+		~knobPos=Array2D.new(4,7);
 		~scopefire;
 		~scopewolf;
 		~scopefrog;
@@ -111,6 +112,10 @@ s.doWhenBooted(
 		i3 = Image.new(	~shrekBG);
 		i4 = Image.new(	~walkBG);
 		~background=false;
+		~knobPos[0,6] = Color.red;
+		~knobPos[1,6] = Color.gray;
+		~knobPos[2,6] = Color.green;
+		~knobPos[3,6] = Color.black;
 
 		Window.closeAll;
 		// main
@@ -243,27 +248,27 @@ s.doWhenBooted(
 
 		Button.new(w, Rect(winWidth-20,5,15,15))
 		.states_([
-			["", Color.black, Color.fromHexString("#78cdd7")],
-			["",Color.white, Color.white(1.0)]
+		["", Color.black, Color.fromHexString("#78cdd7")],
+		["",Color.white, Color.white(1.0)]
 		])
 		.action_({|panner|
-			if(panner.value==1,{
+		if(panner.value==1,{
 
-				wp.visible = true;
+		wp.visible = true;
 
-			},{wp.visible=false})
+		},{wp.visible=false})
 		});
 
 		Button.new(w, Rect(winWidth-20,winHeight-20,15,15))
 		.states_([
-			["", Color.black, Color.fromHexString("#78cdd7")],
-			["",Color.white, Color.white(1.0)]
+		["", Color.black, Color.fromHexString("#78cdd7")],
+		["",Color.white, Color.white(1.0)]
 		]);
 
 		Button.new(w, Rect(5,winHeight-20,15,15))
 		.states_([
-			["", Color.black, Color.fromHexString("#78cdd7")],
-			["",Color.white, Color.white(1.0)]
+		["", Color.black, Color.fromHexString("#78cdd7")],
+		["",Color.white, Color.white(1.0)]
 		]);
 		*/
 
@@ -289,6 +294,7 @@ s.doWhenBooted(
 		w6 = CompositeView(w,Rect(750,(4*marg)+(3*sectWinHeight),sectWinHeight,sectWinHeight));
 		v6 = UserView(w,Rect(750,(4*marg)+(3*sectWinHeight),sectWinHeight,sectWinHeight));
 		v6.drawFunc_({
+			var myX,myY;
 			var radius = (sectWinHeight/2)-10;
 			Pen.addRect(Rect(0,0,sectWinHeight,sectWinHeight))
 			.fillRadialGradient(((sectWinHeight/2))@((sectWinHeight)),(sectWinHeight/2)@(sectWinHeight),30,200,
@@ -317,17 +323,34 @@ s.doWhenBooted(
 			Pen.addArc(((sectWinHeight/2))@((sectWinHeight)),radius/4,pi,2pi)
 			.strokeColor_(Color.white)
 			.alpha_(0.2)
-			.stroke;
+			.stroke
+			.alpha_(1);
+			//~knobPos[0,0].postln;
+			for(0,numOfPoints-1,{
+				arg i;
+				~knobPos[i,0].postln;
+				"qui".postln;
+
+				myX=(((~knobPos[i,0])/width)*sectWinHeight);
+				"quo".postln;
+				myY=(((~knobPos[i,1]/(height-10))*(sectWinHeight/2))+(sectWinHeight/2)-10);
+				"qua".postln;
+				Pen.color_(~knobPos[i,6]);
+				Pen.addArc((myX)@(myY),5,0,2pi);
+				Pen.fillStroke;
+			})
 
 		});
 
 		v6.mouseDownAction = {
-		arg view, x,y, m;
+			arg view, x,y, m;
 			//var vis;
+			if(~wpBool==false,{
+				~wpFunc.play;
+				wp.visible_(true);
+			},{if(wp.visible == true, {wp.visible=false},{wp.visible=true});});
 
-			if(wp.visible == true, {wp.visible=false},{wp.visible=true});
-			"ciaoooo".postln;
-	};
+		};
 
 
 
@@ -736,6 +759,7 @@ s.doWhenBooted(
 				~knobPos[0,5].set(\angle,~knobPos[0,2].value.linlin(0,1,-1,1));
 				~knobPos[0,5].set(\radius,~knobPos[0,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 
 		~knobLabelDistFire= StaticText(w1, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -762,6 +786,7 @@ s.doWhenBooted(
 				~knobPos[0,5].set(\angle,~knobPos[0,2].value.linlin(0,1,-1,1));
 				~knobPos[0,5].set(\radius,~knobPos[0,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 		"passed1?".postln;
 		~b1 = Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
@@ -908,6 +933,7 @@ s.doWhenBooted(
 				~knobPos[1,5].set(\angle,~knobPos[1,2].value.linlin(0,1,-1,1));
 				~knobPos[1,5].set(\radius,~knobPos[1,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 
 		~knobLabelDistWolf= StaticText(w2, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -934,6 +960,7 @@ s.doWhenBooted(
 				~knobPos[1,5].set(\angle,~knobPos[1,2].value.linlin(0,1,-1,1));
 				~knobPos[1,5].set(\radius,~knobPos[1,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 
 		~b2 = Button.new(w2, Rect(48*knobIntraDist,40,60,knobDim))
@@ -1084,6 +1111,7 @@ s.doWhenBooted(
 				~knobPos[2,5].set(\angle,~knobPos[2,2].value.linlin(0,1,-1,1));
 				~knobPos[2,5].set(\radius,~knobPos[2,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 
 		~knobLabelDistFrog= StaticText(w3, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -1110,6 +1138,7 @@ s.doWhenBooted(
 				~knobPos[2,5].set(\angle,~knobPos[2,2].value.linlin(0,1,-1,1));
 				~knobPos[2,5].set(\radius,~knobPos[2,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 
 		~b3 = Button.new(w3, Rect(48*knobIntraDist,40,60,knobDim))
@@ -1228,6 +1257,7 @@ s.doWhenBooted(
 				~knobPos[3,5].set(\angle,~knobPos[3,2].value.linlin(0,1,-1,1));
 				~knobPos[3,5].set(\radius,~knobPos[3,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 
 		~knobLabelDistStep= StaticText(w4, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -1254,6 +1284,7 @@ s.doWhenBooted(
 				~knobPos[3,5].set(\angle,~knobPos[3,2].value.linlin(0,1,-1,1));
 				~knobPos[3,5].set(\radius,~knobPos[3,3].value);
 				v.refresh;
+				v6.refresh;
 		});
 
 		~b4=Button.new(w4, Rect(48*knobIntraDist,40,60,knobDim))
@@ -1271,7 +1302,7 @@ s.doWhenBooted(
 					},
 					{
 						~stepSynth.run(true);
-						});
+				});
 				sum = ~b1.value+~b2.value+~b3.value+~b4.value;
 				if(sum>0, {
 					~b5.value_(1)
@@ -1458,101 +1489,101 @@ s.doWhenBooted(
 
 		~krBus = Bus.control(s,2);
 		{~stereoMonitor = Synth.after(~stereoMaster,\stereoMonitor,[\inBus,0,\krBus,~krBus]);
-		~updateIndicator = fork{loop{
-			~krBus.get({
-				arg value;
-				{
-					//value[0].postln;
-					~meterL.value_(value[0]);
-					~meterR.value_(value[1]);
-					//~meter.peakLevel_(value[0]);
-				}.defer();
-			});
-			0.01.wait;
-		}
+			~updateIndicator = fork{loop{
+				~krBus.get({
+					arg value;
+					{
+						//value[0].postln;
+						~meterL.value_(value[0]);
+						~meterR.value_(value[1]);
+						//~meter.peakLevel_(value[0]);
+					}.defer();
+				});
+				0.01.wait;
+			}
 		};}.defer(0.5);
 
 
-	//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
-	//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
+		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
+		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
 
-	//{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
+		//{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
 
 
-	/*
-	f = SoundFile.new;
-	f.openRead("C:/Users/Alberto/Documents/università/MAGISTRALE/corsi/CM-LANGUAGE AND SYSTEMS/progetto/group5-HW-SC-PLAS/1.wav");
-	~soundview = SoundFileView(w1, Rect(350,30, 150, 90))
-	.soundfile = f;
+		/*
+		f = SoundFile.new;
+		f.openRead("C:/Users/Alberto/Documents/università/MAGISTRALE/corsi/CM-LANGUAGE AND SYSTEMS/progetto/group5-HW-SC-PLAS/1.wav");
+		~soundview = SoundFileView(w1, Rect(350,30, 150, 90))
+		.soundfile = f;
 
-	~soundview.read()
-	.timeCursorOn_(false)
-	.timeCursorColor_(Color.red)
-	.timeCursorPosition_(2050)
-	.drawsWaveForm_(true)
-	.gridOn_(false)
-	.gridResolution = 0.01;
-	*/
-	//SLIDER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		~soundview.read()
+		.timeCursorOn_(false)
+		.timeCursorColor_(Color.red)
+		.timeCursorPosition_(2050)
+		.drawsWaveForm_(true)
+		.gridOn_(false)
+		.gridResolution = 0.01;
+		*/
+		//SLIDER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	/*
-	~slider = Slider(w, Rect(50,50,150,20))
-	.background_(Color.rand)
-	.thumbSize_(50)
-	.knobColor_(Color.rand)
-	//.mouseOverAction_
-	.action_({
-	arg x;
-	var expctrl;
-	expctrl = x.value.linexp(0,1,50,1000);
-	s.set(\freq, expctrl);
-	~numberbox.value_(x.value.linexp(0,1,50,1000));
-	});
+		/*
+		~slider = Slider(w, Rect(50,50,150,20))
+		.background_(Color.rand)
+		.thumbSize_(50)
+		.knobColor_(Color.rand)
+		//.mouseOverAction_
+		.action_({
+		arg x;
+		var expctrl;
+		expctrl = x.value.linexp(0,1,50,1000);
+		s.set(\freq, expctrl);
+		~numberbox.value_(x.value.linexp(0,1,50,1000));
+		});
 
-	~rangeslider = RangeSlider(w, Rect(50,30,150,20))
-	.background_(Color.rand)
-	.knobColor_(Color.rand)
-	//.mouseOverAction_
-	.action_({
+		~rangeslider = RangeSlider(w, Rect(50,30,150,20))
+		.background_(Color.rand)
+		.knobColor_(Color.rand)
+		//.mouseOverAction_
+		.action_({
 
-	});
+		});
 
-	*/
+		*/
 
-	//ALTRO-----------------------
+		//ALTRO-----------------------
 
-	/*
-	~obj= MultiSliderView(w, Rect(100,100,90,90))
-	.size_(4);
+		/*
+		~obj= MultiSliderView(w, Rect(100,100,90,90))
+		.size_(4);
 
-	~obj1= Slider2D(w, Rect(200,150,90,90))
-	.background_(Color.green)
-	.knobColor_(Color.green)
-	.setXY(0.1, 0.1)
-	.activex_()
-	.activey_
-	.action_({
-	|sl|
-	s.set(\freq, sl.x,\amp,sl.y);
-	});
-	*/
+		~obj1= Slider2D(w, Rect(200,150,90,90))
+		.background_(Color.green)
+		.knobColor_(Color.green)
+		.setXY(0.1, 0.1)
+		.activex_()
+		.activey_
+		.action_({
+		|sl|
+		s.set(\freq, sl.x,\amp,sl.y);
+		});
+		*/
 
-	//f = SoundFile.new;
-	//f.openRead(Platform.C +/+ "/Desktop/1.wav");
-	//~soundview = SoundFileView(w, Rect(10,250, 250, 90))
-	//.soundfile = f;
+		//f = SoundFile.new;
+		//f.openRead(Platform.C +/+ "/Desktop/1.wav");
+		//~soundview = SoundFileView(w, Rect(10,250, 250, 90))
+		//.soundfile = f;
 
-	//~soundview.read(0, f.numFrames)
-	//.timeCursorOn = true;
-	//.timeCursorColor = Color.red
-	//.timeCursorPosition = 2050
-	//.drawsWaveForm = true
-	//.gridOn = true;
-	//.gridResolution = 0.2;
+		//~soundview.read(0, f.numFrames)
+		//.timeCursorOn = true;
+		//.timeCursorColor = Color.red
+		//.timeCursorPosition = 2050
+		//.drawsWaveForm = true
+		//.gridOn = true;
+		//.gridResolution = 0.2;
 
-	//panner---------------------------------------------------------------------------
-	for (0, (numOfPoints-1), {
-		arg i;
+		//panner---------------------------------------------------------------------------
+		for (0, (numOfPoints-1), {
+			arg i;
 			var angle, distance;
 			"cazzi".postln;
 			angle = ~knobPos[i,2].value.linlin(0,1,(-pi/2),(pi/2));
@@ -1568,142 +1599,154 @@ s.doWhenBooted(
 
 
 		~angPos = Array2D.new(numOfPoints,2);
+		~wpFunc = {
+			wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
+			.front
+			.alwaysOnTop_(false)
+			.visible_(false)
+			.drawFunc_({});
+			//.background_(Color.rand)
 
-		wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
-		.front
-		.alwaysOnTop_(false)
-		.visible_(false)
-		//.background_(Color.rand)
-		.drawFunc = {
+			v = UserView(wp,Rect(0,0,width,height));
 
-		};
+			v.drawFunc = {
+				Pen.addRect(wp.view.bounds.insetBy(0))
+				.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
+					Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
+				//.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
+				.color_(Color.white)
+				.fill
+				//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
+				.addArc((panWinWidth/2)@(panWinHeight),(20),pi,2pi)
 
-		v = UserView(wp,Rect(0,0,width,height));
+				.fill
+				.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
+				.alpha_(0.8)
+				.stroke
+				.addArc((panWinWidth/2)@(panWinHeight),(height-10)/4*3,pi,2pi)
+				.alpha_(0.6)
+				.stroke
+				.addArc((panWinWidth/2)@(panWinHeight),(height-10)/2,pi,2pi)
+				.alpha_(0.4)
+				.stroke
+				.addArc((panWinWidth/2)@(panWinHeight),(height-10)/4,pi,2pi)
+				.alpha_(0.2)
+				.stroke;
 
-		v.drawFunc = {
-			Pen.addRect(wp.view.bounds.insetBy(0))
-			.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
-				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
-			//.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
-			.color_(Color.white)
-			.fill
-			//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
-			.addArc((panWinWidth/2)@(panWinHeight),(20),pi,2pi)
-			.fill
-			.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
-			.stroke
-			.addArc((panWinWidth/2)@(panWinHeight),(height-10)/4*3,pi,2pi)
-			.stroke
-			.addArc((panWinWidth/2)@(panWinHeight),(height-10)/4,pi,2pi)
-			.stroke
-			.addArc((panWinWidth/2)@(panWinHeight),(height-10)/2,pi,2pi)
-			.stroke;
-			"CIAO".postln;
-			for (0, (numOfPoints-1), {
-				arg i;
-				var angle, distance,angle01,distance01;
-				//i.postln;
-				//pos.at(i,0).postln;
-				Pen.fillColor = Color.black;
-				Pen.strokeColor = Color.white;
-				//"CIAO1".postln;
-				~knobPos.postln;
-				//Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
-				Pen.drawImage( ((~knobPos[i,0])-18)@((~knobPos[i,1])-18), ~knobPos[i,4], operation: 'sourceOver', opacity:1);
-				~knobPos[0,0].postln;
-				//"CIAO2".postln;
-				//angle = ((~knobPos[i,0]-centerPosX)/(~knobPos[i,1]-centerPosY).abs).atan;
-				//angle01 = angle/(pi/2);
-				/*
-				distance = (((~knobPos[i,0]-centerPosX).squared)+((~knobPos[i,1]-centerPosY).squared)).sqrt;
-				distance01 = distance/height;
-				"distance01".postln;
-				distance01.postln;
-				"angle01".postln;
-				angle01.postln;
-				~angPos[i,0] = distance01;
-				~angPos[i,1] = angle01;
-				*/
-				Pen.fillStroke;
-			});
-		};
-
-	v.mouseDownAction = { arg view, x,y, m;
-		//m.postln;
-		([256, 0].includes(m)).if{ // restrict to no modifier
-			//value = (x).linlin(0,v.bounds.width,0,1); v.doAction};
-			var found = false;
-			for (0, numOfPoints-1, {
-				arg i;
-				if((x>=(~knobPos[i,0]-elRadius))&&((x<=(~knobPos[i,0]+elRadius)))&&((y>=(~knobPos[i,1]-elRadius)))&&((y<=(~knobPos[i,1]+elRadius))),{
-					selPos = i;
-					found =true;
+				"CIAO".postln;
+				for (0, (numOfPoints-1), {
+					arg i;
+					var angle, distance,angle01,distance01;
+					//i.postln;
+					//pos.at(i,0).postln;
+					Pen.fillColor = Color.black;
+					Pen.strokeColor = Color.white;
+					//"CIAO1".postln;
+					~knobPos.postln;
+					//Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
+					Pen.drawImage( ((~knobPos[i,0])-18)@((~knobPos[i,1])-18), ~knobPos[i,4], operation: 'sourceOver', opacity:1);
+					~knobPos[0,0].postln;
+					//"CIAO2".postln;
+					//angle = ((~knobPos[i,0]-centerPosX)/(~knobPos[i,1]-centerPosY).abs).atan;
+					//angle01 = angle/(pi/2);
+					/*
+					distance = (((~knobPos[i,0]-centerPosX).squared)+((~knobPos[i,1]-centerPosY).squared)).sqrt;
+					distance01 = distance/height;
+					"distance01".postln;
+					distance01.postln;
+					"angle01".postln;
+					angle01.postln;
+					~angPos[i,0] = distance01;
+					~angPos[i,1] = angle01;
+					*/
+					Pen.fillStroke;
 				});
+			};
+
+			v.mouseDownAction = { arg view, x,y, m;
+				//m.postln;
+				([256, 0].includes(m)).if{ // restrict to no modifier
+					//value = (x).linlin(0,v.bounds.width,0,1); v.doAction};
+					var found = false;
+					for (0, numOfPoints-1, {
+						arg i;
+						if((x>=(~knobPos[i,0]-elRadius))&&((x<=(~knobPos[i,0]+elRadius)))&&((y>=(~knobPos[i,1]-elRadius)))&&((y<=(~knobPos[i,1]+elRadius))),{
+							selPos = i;
+							found =true;
+						});
+					});
+					if(found!=true,{selPos= (-1)});
+					selPos.postln
+				};
+			};
+			v.mouseMoveAction = {
+				arg view, x,y, m;
+				var angle,distance;
+				var l = (2*(height-10));
+				var h=(height-10);
+				if(selPos!=(-1),{
+					distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
+					angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
+					if(y>=height,{
+						y=height;
+					});
+					if(distance>=1.linlin(0,1,0,height-10),{
+						distance = 1.value.linlin(0,1,0,height-10);
+						x = (((distance*((angle).sin))+centerPosX));
+						if(y>height,{
+							y=height;
+						},{
+							y = (((distance-(distance*(angle).cos))));
+						})
+
+					});
+
+					angle.postln;
+					/*
+					distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
+					angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
+					if(y>= (h-elRadius), {
+					y=h;
+					if(x<=(elRadius),{
+					x= 10;
+					});
+					if(x>=(width-elRadius),{
+					x= (width-10);
+					});
+					},{
+					if((distance+elRadius)>=(h), {
+					if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
+					if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
+					//x = (((h*((angle).sin))+centerPosX)+elRadius);
+					y = (((h-(h*(angle).cos)))+elRadius);
+					});
+					});
+					distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
+					angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
+					*/
+					~knobPos[selPos,0] =x;
+					~knobPos[selPos,1] =y;
+					~knobPos[selPos,2].value_(angle.linlin(-pi/2,pi/2,0,1));
+					~knobPos[selPos,3].value_(distance.linlin(0,height-10,0,1));
+					~knobPos[selPos,5].set(\angle,~knobPos[selPos,2].value.linlin(0,1,-1,1));
+					~knobPos[selPos,5].set(\radius,~knobPos[selPos,3].value);
+					//p.set(\angle,~angPos[0,1]);
+					//if((~angPos[0,0]>=1),{~angPos[0,0] = 1});
+					//p.set(\radius,~angPos[0,0]);
+
+					v.refresh;
+					v6.refresh;
+
+				};
+				)
+
+			};
+			~wpBool=true;
+			wp.onClose_({
+				~wpBool=false;
 			});
-			if(found!=true,{selPos= (-1)});
-			selPos.postln
 		};
-	};
-	v.mouseMoveAction = {
-		arg view, x,y, m;
-		var angle,distance;
-		var l = (2*(height-10));
-		var h=(height-10);
-		if(selPos!=(-1),{
-			distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
-			angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
-			if(y>=height,{
-				y=height;
-			});
-			if(distance>=1.linlin(0,1,0,height-10),{
-				distance = 1.value.linlin(0,1,0,height-10);
-				x = (((distance*((angle).sin))+centerPosX));
-				if(y>height,{
-					y=height;
-				},{
-					y = (((distance-(distance*(angle).cos))));
-				})
-
-			});
-
-			angle.postln;
-			/*
-			distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
-			angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
-			if(y>= (h-elRadius), {
-			y=h;
-			if(x<=(elRadius),{
-			x= 10;
-			});
-			if(x>=(width-elRadius),{
-			x= (width-10);
-			});
-			},{
-			if((distance+elRadius)>=(h), {
-			if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
-			if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
-			//x = (((h*((angle).sin))+centerPosX)+elRadius);
-			y = (((h-(h*(angle).cos)))+elRadius);
-			});
-			});
-			distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
-			angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
-			*/
-			~knobPos[selPos,0] =x;
-			~knobPos[selPos,1] =y;
-			~knobPos[selPos,2].value_(angle.linlin(-pi/2,pi/2,0,1));
-			~knobPos[selPos,3].value_(distance.linlin(0,height-10,0,1));
-			~knobPos[selPos,5].set(\angle,~knobPos[selPos,2].value.linlin(0,1,-1,1));
-			~knobPos[selPos,5].set(\radius,~knobPos[selPos,3].value);
-			//p.set(\angle,~angPos[0,1]);
-			//if((~angPos[0,0]>=1),{~angPos[0,0] = 1});
-			//p.set(\radius,~angPos[0,0]);
-
-			v.refresh;
-
-		}
-		)
-	};
+		~wpFunc.play;
 });
 )
 
