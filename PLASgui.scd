@@ -299,7 +299,7 @@ s.doWhenBooted(
 		v6 = UserView(w,Rect(750,(4*marg)+(3*sectWinHeight),sectWinHeight,sectWinHeight));
 		v6.drawFunc_({
 			var myX,myY;
-			var radius = (sectWinHeight/2)-10;
+			var radius = (sectWinHeight/2)-3;
 			Pen.addRect(Rect(0,0,sectWinHeight,sectWinHeight))
 			.fillRadialGradient(((sectWinHeight/2))@((sectWinHeight)),(sectWinHeight/2)@(sectWinHeight),30,200,
 				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
@@ -335,9 +335,9 @@ s.doWhenBooted(
 				~knobPos[i,0].postln;
 				"qui".postln;
 
-				myX=(((~knobPos[i,0])/width)*sectWinHeight);
+				myX=(((~knobPos[i,0])/(width-10))*(sectWinHeight-3));
 				"quo".postln;
-				myY=(((~knobPos[i,1]/(height-10))*(sectWinHeight/2))+(sectWinHeight/2)-10);
+				myY=(((~knobPos[i,1]/(height-10))*((sectWinHeight/2)-3))+(sectWinHeight/2));
 				"qua".postln;
 				Pen.color_(~knobPos[i,6]);
 				Pen.addArc((myX)@(myY),5,0,2pi);
@@ -802,7 +802,7 @@ s.doWhenBooted(
 			{
 				var angle,distance,x,y;
 				angle = ~knobPos[0,2].value.linlin(0,1,-pi/2,pi/2);
-				distance = ~knobPos[0,3].value.linlin(0,1,0,height-10);
+				distance = ~knobPos[0,3].value.linlin(0,1,20,height-10);
 				x = (((distance*((angle).sin))+centerPosX)+elRadius);
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[0,0] = x;
@@ -1627,12 +1627,12 @@ s.doWhenBooted(
 
 		~wpFunc = {
 			//.background_(Color.rand)
-			~wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
+			~wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight+18), false)
 			.front
 			.alwaysOnTop_(false)
 			.visible_(false)
 			.drawFunc_({});
-			v = UserView(~wp,Rect(0,0,width,height));
+			v = UserView(~wp,Rect(0,0,width,height+18));
 
 			"drawFunc".postln;
 
@@ -1644,7 +1644,7 @@ s.doWhenBooted(
 				.color_(Color.white)
 				.fill
 				//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
-				.addArc((panWinWidth/2)@(panWinHeight),(20),pi,2pi)
+				.addArc((panWinWidth/2)@(panWinHeight),25,pi,2pi)
 
 				.fill
 				.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
@@ -1725,7 +1725,17 @@ s.doWhenBooted(
 					if(distance>=1.linlin(0,1,0,height-10),{
 						distance = 1.value.linlin(0,1,0,height-10);
 						x = (((distance*((angle).sin))+centerPosX));
-						if(y>height,{
+						if(y>=height,{
+							y=height;
+						},{
+							y = (((distance-(distance*(angle).cos))));
+						})
+
+					});
+					if(distance<=20.linlin(0,1,20,height-10),{
+						distance = 0.value.linlin(0,1,20,height-10);
+						x = (((distance*((angle).sin))+centerPosX));
+						if(y>=height,{
 							y=height;
 						},{
 							y = (((distance-(distance*(angle).cos))));
