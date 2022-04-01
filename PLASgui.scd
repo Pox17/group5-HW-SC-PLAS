@@ -157,7 +157,6 @@ s.doWhenBooted(
 			Pen.fillAxialGradient(w.view.bounds.leftTop, w.view.bounds.rightBottom, Color.fromHexString("#05668d"), Color.fromHexString("#028090"));
 
 
-
 			Pen.perform([\stroke, \fill].choose);
 
 			Pen.addRect(Rect(marg,marg,sectWinWidth,sectWinHeight))
@@ -643,7 +642,7 @@ s.doWhenBooted(
 			inputbw = 0.8,
 			spread = 10,
 			earlyreflevel = -25,
-			taillevel = -15,
+			taillevel = -15+(amp/1.5),
 			maxroomsize = roomsize+1;
 			input = In.ar(inBus,2);
 			outputL = GVerb.ar(
@@ -704,13 +703,15 @@ s.doWhenBooted(
 		}).add;
 
 		SynthDef(\stereoMaster,{
-			arg inBus,outBus,amp=1, ratio=4;
+			arg inBus, outBus, amp = 10, ratio=4;
 
 			var in = In.ar(inBus,2);
+			in = in*amp.dbamp;
 			//compression
 			in = Compander.ar(in, in, (-10).dbamp, 1, 1/ratio, 0.01, 0.05);
+			in = Limiter.ar(in, 0.8, 0.01);
 
-			Out.ar(outBus,in*amp);
+			Out.ar(outBus,in);
 		}).add;
 		// LABEL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1412,12 +1413,12 @@ s.doWhenBooted(
 
 		~knobEref = Knob(w5, Rect(0.7*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
-		.value_(1/3)
+		.value_(0.258)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg eref;
-			~roomer.set(\earlyreflevel,~knobEref.value.linlin(0,1,-40,5));
+			~roomer.set(\earlyreflevel,~knobEref.value.linlin(0,1,-40,18));
 
 		});
 
@@ -1428,6 +1429,7 @@ s.doWhenBooted(
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
 
+		// ~spec = ControlSpec((1/8)*ampdb, 8.ampdb, 'db', units:"dB")
 		~knobLvl = Knob(w5, Rect(5.5*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
 		.value_(0.5)
@@ -1455,11 +1457,27 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.backColor_(Color.white);
 
-		~masterSlider = Slider(w5, Rect(10,327,30,sectWinHeight-28))
+		~masterVolume = Volume.new(s, 0, 2, -90, 6);
+
+		~spec = ControlSpec((3.16*(10**(-5))).ampdb, 2.ampdb, \db, units:"dB");
+		"UNMAP".postln;
+		~spec.unmap(0).postln;
+
+
+		~masterSlider = Slider.new(w5, Rect(10,327,30,sectWinHeight-28))
 		.orientation_(\vertical)
 		.background_(Color.fromHexString("#78cdd7"))
 		.thumbSize_(20)
-		.knobColor_(Color.fromHexString("#78cdd7"));
+		.knobColor_(Color.fromHexString("#78cdd7"))
+		.value_(~spec.unmap(0))
+		.action = {
+			~masterVolume.volume = ~spec.map(~masterSlider.value);
+		};
+
+
+		// "mastervalue".postln;
+		// ~masterSlider.value.postln;
+		// ~masterVolume.volume.postln;
 		//.mouseOverAction_
 		/*
 		.action_({
