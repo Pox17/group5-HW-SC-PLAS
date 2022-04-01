@@ -10,6 +10,7 @@ s.plotTree;
 ~bufStep;
 ~bufWolf;
 
+
 if(s.hasBooted != true,{s.boot});
 s.freeAll;
 s.doWhenBooted(
@@ -17,7 +18,7 @@ s.doWhenBooted(
 		//VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-		var f,wp,w1,w2,w3,w4,w5,w6,v6,i1,i2,i3,i4,meter,
+		var f,w1,w2,w3,w4,w5,w6,v6,i1,i2,i3,i4,meter,
 
 		scopingSynth,image,
 
@@ -77,7 +78,9 @@ s.doWhenBooted(
 		*rows: 0 fire, 1 wolf, 2 frog, 3 step
 		*columns: 0 pan Knob, 1 distance Knob, 2 x, 3 y, 4 image, 5 positioner
 		*/
-		~wpBool;
+		~wpBool=false;
+		~wp;
+		~wpNew;
 		~knobPos=Array2D.new(4,7);
 		~scopefire;
 		~scopewolf;
@@ -243,6 +246,7 @@ s.doWhenBooted(
 				w.refresh;
 		});});
 
+
 		/*
 
 
@@ -345,10 +349,30 @@ s.doWhenBooted(
 		v6.mouseDownAction = {
 			arg view, x,y, m;
 			//var vis;
-			if(~wpBool==false,{
-				~wpFunc.play;
-				wp.visible_(true);
-			},{if(wp.visible == true, {wp.visible=false},{wp.visible=true});});
+			// if(~wpBool==false,{
+			/*if(~wp.isClosed==true,{
+			~wpFunc.play;
+			// ~wp.visible_(true);
+			},{
+			if(~wp.visible == true, {
+			~wp.visible=false
+			},{
+			~wp.visible=true
+
+			});
+
+			});*/
+			if(~wpBool==false,
+				{
+					~wpFunc.value;
+					~wp.visible_(true);
+					~wpBool = true;
+				},
+				{
+					~wp.close;
+					~wpBool = false;
+				}
+			)
 
 		};
 
@@ -1505,7 +1529,7 @@ s.doWhenBooted(
 
 
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
-		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2);
+		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2)
 
 		//{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
 
@@ -1599,18 +1623,21 @@ s.doWhenBooted(
 
 
 		~angPos = Array2D.new(numOfPoints,2);
+
+
 		~wpFunc = {
-			wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
+			//.background_(Color.rand)
+			~wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
 			.front
 			.alwaysOnTop_(false)
 			.visible_(false)
 			.drawFunc_({});
-			//.background_(Color.rand)
+			v = UserView(~wp,Rect(0,0,width,height));
 
-			v = UserView(wp,Rect(0,0,width,height));
+			"drawFunc".postln;
 
 			v.drawFunc = {
-				Pen.addRect(wp.view.bounds.insetBy(0))
+				Pen.addRect(~wp.view.bounds.insetBy(0))
 				.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
 					Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
 				//.addOval(Rect((panWinWidth/2)-20,panWinHeight-20,40,40))
@@ -1663,6 +1690,8 @@ s.doWhenBooted(
 				});
 			};
 
+			"mouseDownAction".postln;
+
 			v.mouseDownAction = { arg view, x,y, m;
 				//m.postln;
 				([256, 0].includes(m)).if{ // restrict to no modifier
@@ -1679,6 +1708,9 @@ s.doWhenBooted(
 					selPos.postln
 				};
 			};
+
+			"mouseMoveAction".postln;
+
 			v.mouseMoveAction = {
 				arg view, x,y, m;
 				var angle,distance;
@@ -1741,13 +1773,29 @@ s.doWhenBooted(
 				)
 
 			};
-			~wpBool=true;
-			wp.onClose_({
+
+			"wpFuncEnd".postln;
+
+			~wp.onClose_({
 				~wpBool=false;
 			});
-		};
-		~wpFunc.play;
+
+			// ~wpBool=true;
+		}.defer(0.1);
+
+		~wpBool.postln;
+
+		/*~wp.addToOnClose_({
+		~wpNew = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
+		.front
+		.alwaysOnTop_(false)
+		.visible_(false)
+		.drawFunc_({});
+		})*/
+
+		~wpFunc.value;
 });
 )
 
-s.plotTree;
+~wp.isClosed.postln
+~wp.postln
