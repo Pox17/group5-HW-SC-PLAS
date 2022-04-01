@@ -629,24 +629,26 @@ s.doWhenBooted(
 			val = input*inGain;
 			valEf = input*efGain; //*(efGain)*(inGain+0.1);
 			panMain = Pan2.ar(val,angle);
-			panEf = Pan2.ar(valEf,angle);♣
+			panEf = Pan2.ar(valEf,angle);
 			Out.ar(mainOut,panMain);
 			Out.ar(effectOut,panEf);
 		}).add;
 
 		SynthDef(\roomer,{
-			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=0, radius;
-			var input, out,outputL,outputR, rev,yL,yR,zL,zR,
-			roomsize = 100,
+			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=0, room=0.8, damp=0.3, radius;
+			var input, out,outputL,outputR,rev,yL,yR,zL,zR;
+			/*roomsize = 100,
 			revtime = 4.85,
 			damping = 0.5,
 			inputbw = 0.8,
 			spread = 10,
 			earlyreflevel = -25,
 			taillevel = -15+(amp/2),
-			maxroomsize = roomsize+1;
+			maxroomsize = roomsize+1,*/
+
+
 			input = In.ar(inBus,2);
-			outputL = GVerb.ar(
+			/*outputL = GVerb.ar(
 				input[0],
 				roomsize:roomsize ,
 				revtime: revtime,
@@ -676,7 +678,19 @@ s.doWhenBooted(
 				add: 0
 
 			);
-			out = [outputL,outputR];
+			out = [outputL,outputR];*/
+
+			out = FreeVerb2.ar(
+				input[0],
+				input[1],
+				mix: 1,
+				room: room,
+				damp: damp,
+				mul: 1.0,
+				add: 0.0
+
+			);
+
 			out = BPF.ar(out, 3000)*(amp).dbamp;
 			Out.ar(outBus,out);
 		} ).add;
@@ -1377,42 +1391,42 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.backColor_(Color.white);
 
-		~knobRoom = Knob(w5, Rect(0.7*knobIntraDist,160,knobDim,knobDim))
+		~knobRoom = Knob(w5, Rect(0.7*knobIntraDist,160+15,knobDim,knobDim))
 		.color_(~colors)
-		.value_(100/(300-20))
+		.value_(0.7)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg room;
-			~roomer.set(\roomsize,~knobRoom.value.linlin(0,1,20,300));
+			~roomer.set(\room,~knobRoom.value.linlin(0,1,0,1));
 
 		});
 
-		~knobLabelRoom = StaticText(w5, Rect(0.7*knobIntraDist,125,knobDim,knobDim))
+		~knobLabelRoom = StaticText(w5, Rect(0.7*knobIntraDist,130+10,knobDim,knobDim))
 		.string_("Room")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
 
 
-		~knobDamp = Knob(w5, Rect(5.5*knobIntraDist,160,knobDim,knobDim))
+		~knobDamp = Knob(w5, Rect(5.5*knobIntraDist,160+15,knobDim,knobDim))
 		.color_(~colors)
-		.value_(0.5)
+		.value_(0.3)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg damp;
-			~roomer.set(\damping,~knobDamp.value.linlin(0,1,0,1));
+			~roomer.set(\damp,~knobDamp.value.linlin(0,1,0,1));
 
 		});
-		~knobLabelDamp = StaticText(w5, Rect(5.5*knobIntraDist,125,knobDim,knobDim))
+		~knobLabelDamp = StaticText(w5, Rect(5.5*knobIntraDist,130+10,knobDim,knobDim))
 		.string_("Damp")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
 
 
-		~knobEref = Knob(w5, Rect(0.7*knobIntraDist,240,knobDim,knobDim))
+		/*~knobEref = Knob(w5, Rect(0.7*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
 		.value_(0.258)
 		.mode_(\vert)
@@ -1428,10 +1442,10 @@ s.doWhenBooted(
 		.string_("E.Ref")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
-		.stringColor_(Color.white);
+		.stringColor_(Color.white);*/
 
 		// ~spec = ControlSpec((1/8)*ampdb, 8.ampdb, 'db', units:"dB")
-		~knobLvl = Knob(w5, Rect(5.5*knobIntraDist,240,knobDim,knobDim))
+		~knobLvl = Knob(w5, Rect(knobIntraDist*3.1,240,knobDim,knobDim))
 		.color_(~colors)
 		.value_(0.5)
 		.mode_(\vert)
@@ -1444,7 +1458,7 @@ s.doWhenBooted(
 		//	~roomer.set(\amp, lvl.log10*20);
 		//});
 
-		~knobLabelLvl = StaticText(w5, Rect(5.5*knobIntraDist,205,knobDim,knobDim))
+		~knobLabelLvl = StaticText(w5, Rect(3.1*knobIntraDist,205,knobDim,knobDim))
 		.string_("Lvl")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
