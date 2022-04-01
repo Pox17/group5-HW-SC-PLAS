@@ -1732,16 +1732,6 @@ s.doWhenBooted(
 						})
 
 					});
-					if(distance<=20.linlin(0,1,20,height-10),{
-						distance = 0.value.linlin(0,1,20,height-10);
-						x = (((distance*((angle).sin))+centerPosX));
-						if(y>=height,{
-							y=height;
-						},{
-							y = (((distance-(distance*(angle).cos))));
-						})
-
-					});
 
 					angle.postln;
 					/*
