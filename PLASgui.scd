@@ -45,7 +45,7 @@ s.doWhenBooted(
 		sectWinHeight = (winHeight-(5*marg))/4,
 
 		// label
-		titleWidth = 80,
+		titleWidth = 120,
 		titleHeight = 20,
 
 		//knob dimension
@@ -429,7 +429,7 @@ s.doWhenBooted(
 			grainPos = 0.162215,
 			randomness = 1, // 0.0 - 1.0
 			excited1 = 1,  // 0.5 - 1.7
-			excited2 = 1.7, // 0.5 - 1.7
+			excited2 = 1, // 0.5 - 1.7
 			ampFront = 1,
 			ampRear = 1;
 
@@ -714,10 +714,10 @@ s.doWhenBooted(
 		}).add;
 		// LABEL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-		~labeltitle = StaticText(w, Rect((winWidth/2)-(200/2),15,200,titleHeight))
-		.string_("Ti puzza l'ano, by Ric")
+		~labeltitle = StaticText(w, Rect((sectWinWidth/2)-(150/2),15,200,titleHeight+4))
+		.string_("GRANULANDS")
 		.align_(\center)
-		.font_(Font("Eras Bold ITC"/*"Cooper Black""Eras Bold ITC""Harlow Solid Italic""Matura MT Script Capitals""Swis721 BlkEx BT"*/, 15).boldVariant)
+		.font_(Font("Helvetica"/*"Cooper Black""Eras Bold ITC""Harlow Solid Italic""Matura MT Script Capitals""Swis721 BlkEx BT"*/, 20).boldVariant)
 		.stringColor_(Color.black)
 		.background_(Color.white);
 
@@ -727,13 +727,13 @@ s.doWhenBooted(
 		~fireSynth = Synth.newPaused(\fire,[\outBus,~fireBus]);
 
 		~labelFire = StaticText(w1, Rect(20,0,titleWidth,titleHeight))
-		.string_("Fire")
+		.string_("FIRE")
 		.align_(\center)
-		.font_(Font("Eras Bold ITC", 18).boldVariant)
+		.font_(Font("Helvetica", 18).boldVariant)
 		.background_(Color.white);
 
 		~knobLabelWood= StaticText(w1, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("wood")
+		.string_("Wood")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -752,14 +752,15 @@ s.doWhenBooted(
 
 		~numberboxWood = NumberBox(w1, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 		.value_(1)
+		.background_(Color.white)
 		.align_(\center)
 		.action_({
 			arg wood;
-			~knobWood.valueAction_(wood.value.linlin(50,100,0,1));
+			~knobWood.valueAction_(wood.value.linlin(0.5,2,0,1));
 		});
 
 		~knobLabelPanFire= StaticText(w1, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("pan")
+		.string_("Pan")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -787,7 +788,7 @@ s.doWhenBooted(
 		});
 
 		~knobLabelDistFire= StaticText(w1, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("distance")
+		.string_("Distance")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -849,13 +850,13 @@ s.doWhenBooted(
 
 
 		~labelWolf = StaticText(w2, Rect(20,0,titleWidth,titleHeight))
-		.string_("Wolf")
+		.string_("WOLF")
 		.align_(\center)
-		.font_(Font("Eras Bold ITC", 18).boldVariant)
+		.font_(Font("Helvetica", 18).boldVariant)
 		.background_(Color.white);
 
 		~knobLabelLenght= StaticText(w2, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("lenght")
+		.string_("Lenght")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -874,6 +875,7 @@ s.doWhenBooted(
 
 		~numberboxLenght = NumberBox(w2, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 		.value_(3.5)
+		.background_(Color.white)
 		.align_(\center)
 		.action_({
 			arg lenght;
@@ -881,7 +883,7 @@ s.doWhenBooted(
 		});
 
 		~knobLabelGrain= StaticText(w2, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("grain")
+		.string_("Grain")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -899,6 +901,7 @@ s.doWhenBooted(
 		});
 
 		~numberboxGrain = NumberBox(w2, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+		.background_(Color.white)
 		.value_(0.162215)
 		.align_(\center)
 		.action_({
@@ -907,7 +910,7 @@ s.doWhenBooted(
 		});
 
 		~knobLabelOcc = StaticText(w2, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
-		.string_("occurrance")
+		.string_("Occurrance")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -926,6 +929,7 @@ s.doWhenBooted(
 
 		~numberboxOcc = NumberBox(w2, Rect(13*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 		.value_(0.2)
+		.background_(Color.white)
 		.align_(\center)
 		.action_({
 			arg occ;
@@ -933,7 +937,7 @@ s.doWhenBooted(
 		});
 
 		~knobLabelPanWolf= StaticText(w2, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("pan")
+		.string_("Pan")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -961,7 +965,7 @@ s.doWhenBooted(
 		});
 
 		~knobLabelDistWolf= StaticText(w2, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("distance")
+		.string_("Distance")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1025,10 +1029,10 @@ s.doWhenBooted(
 		*/
 		~frogBus = Bus.audio(s,1);
 		~frogSynth = Synth.newPaused(\frog,[\outBus,~frogBus]);
-		~labelFrog = StaticText(w3, Rect(20,0,titleWidth,titleHeight))
-		.string_("Frog")
+		~labelFrog = StaticText(w3, Rect(20,0,1.5*titleWidth,titleHeight))
+		.string_("CRICKETS-FROGS")
 		.align_(\center)
-		.font_(Font("Eras Bold ITC", 18).boldVariant)
+		.font_(Font("Helvetica", 18).boldVariant)
 		.background_(Color.white);
 
 		~randomKnobLabel= StaticText(w3, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -1045,21 +1049,22 @@ s.doWhenBooted(
 		.value_(1)
 		.action_({
 			arg boh1;
-			~randomNumberbox.value_(boh1.value);
+			~randomNumberbox.value_(boh1.value.linlin(0,1,0,1));
 			~frogSynth.set(\randomness,~randomKnob.value);
 		});
 
 		~randomNumberbox = NumberBox(w3, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
-		//.value_(0)
+		.background_(Color.white)
 		.align_(\center)
 		.value_(1)
 		.action_({
 			arg boh1;
-			~knob.valueAction_(~randomKnob.value);
+			~randomKnob.valueAction_(boh1.value.linlin(0,1,0,1));
+			~frogSynth.set(\randomness,~randomKnob.value.linlin(0,1,0,1))
 		});
 
-		~excited1KnobLabel= StaticText(w3, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("excited1")
+		~excited1KnobLabel= StaticText(w3, Rect(8*knobIntraDist,1.1*marg,knobLabelWidth+5,20))
+		.string_("Occur. 1")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1077,15 +1082,17 @@ s.doWhenBooted(
 		});
 
 		~excited1Numberbox = NumberBox(w3, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
+		.background_(Color.white)
 		.value_(1)
 		.align_(\center)
 		.action_({
 			arg boh2;
-			~knob.valueAction_(~excited1Knob.value.linlin(0.5,1.7,0,1));
+			~excited1Knob.valueAction_(boh2.value.linlin(0.5,1.7,0,1));
+			//~frogSynth.set(\excited1,~excited1Knob.value.linlin(0.5,1.7,0,1));
 		});
 
 		~excited2KnobLabel = StaticText(w3, Rect(12*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
-		.string_("excited2")
+		.string_("Occur. 2")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1099,19 +1106,20 @@ s.doWhenBooted(
 		.action_({
 			arg boh3;
 			~excited2Numberbox.value_(boh3.value.linlin(0,1,0.5,1.7));
-			~frogSynth.set(\excited2,~excited1Knob.value.linlin(0,1,0.5,1.7));
+			~frogSynth.set(\excited2,~excited2Knob.value.linlin(0,1,0.5,1.7));
 		});
 
 		~excited2Numberbox = NumberBox(w3, Rect(13*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 		.value_(1)
+		.background_(Color.white)
 		.align_(\center)
 		.action_({
 			arg boh3;
-			~excited2Knob.valueAction_(~excited2Knob.value.linlin(0.5,1.7,0,1));
+			~excited2Knob.valueAction_(boh3.value.linlin(0.5,1.7,0,1));
 		});
 
 		~knobLabelPanFrog= StaticText(w3, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("pan")
+		.string_("Pan")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1139,7 +1147,7 @@ s.doWhenBooted(
 		});
 
 		~knobLabelDistFrog= StaticText(w3, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("distance")
+		.string_("Distance")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1196,10 +1204,10 @@ s.doWhenBooted(
 
 		~stepBus = Bus.audio(s,1);
 		~stepSynth = Synth.newPaused(\PassettiNeve,[\outBus,~stepBus]);
-		~labelStep = StaticText(w4, Rect(20,0,titleWidth,titleHeight))
-		.string_("Step")
+		~labelStep = StaticText(w4, Rect(20,0,1.5*titleWidth,titleHeight))
+		.string_("FOOTSTEPS")
 		.align_(\center)
-		.font_(Font("Eras Bold ITC", 18).boldVariant)
+		.font_(Font("HelveticaC", 18).boldVariant)
 		.background_(Color.white);
 
 		~knobLabelSpeed= StaticText(w4, Rect(3*knobIntraDist,1.1*marg,knobLabelWidth,20))
@@ -1222,14 +1230,16 @@ s.doWhenBooted(
 
 		~numberboxSpeed = NumberBox(w4, Rect(3*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 		.value_(1)
+		.background_(Color.white)
 		.align_(\center)
 		.action_({
 			arg speed;
-			~knobSpeed.valueAction_(speed.value.linlin(50,100,0,1));
+			~knobSpeed.valueAction_(speed.value.linlin(1,2,0,1));
+			~stepSynth.set(\speed,~knobSpeed.value.linlin(1,2,0,1));
 		});
 
 		~knobLabelSnowy= StaticText(w4, Rect(7*knobIntraDist,1.1*marg,1.5*knobLabelWidth,20))
-		.string_("Snow/Dirt")
+		.string_("Dirt/Snow")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1248,16 +1258,18 @@ s.doWhenBooted(
 
 		~numberboxSnowy = NumberBox(w4, Rect(8*knobIntraDist,(knobIntraDist)+knobDim+(1.7*marg),numBoxWidth,numBoxHeight))
 		.value_(2000)
+		.background_(Color.white)
 		.align_(\center)
 		.action_({
 			arg snowy;
 			~knobSnowy.valueAction_(snowy.value.linlin(200,2000,0,1));
+			~stepSynth.set(\hpfreq,~knobSnowy.value.linlin(200,2000,0,1));
 
 		});
 
 
 		~knobLabelPanStep= StaticText(w4, Rect(36*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("pan")
+		.string_("Pan")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1285,7 +1297,7 @@ s.doWhenBooted(
 		});
 
 		~knobLabelDistStep= StaticText(w4, Rect(42*knobIntraDist,1.1*marg,knobLabelWidth,20))
-		.string_("distance")
+		.string_("Distance")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
@@ -1337,10 +1349,10 @@ s.doWhenBooted(
 
 		//SIDE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-		~labelSide = StaticText(w5, Rect(13,0,1.3*titleWidth,titleHeight))
-		.string_("Master control")
+		~labelSide = StaticText(w5, Rect(15,0,sectWinHeight-30,titleHeight))
+		.string_("MASTER")
 		.align_(\center)
-		.font_(Font("Eras Bold ITC", 12).boldVariant)
+		.font_(Font("Helvetica", 18).boldVariant)
 		.background_(Color.white);
 
 		~b5 = Button.new(w5, Rect(knobIntraDist,40,105,knobDim))
