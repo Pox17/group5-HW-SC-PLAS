@@ -157,7 +157,6 @@ s.doWhenBooted(
 			Pen.fillAxialGradient(w.view.bounds.leftTop, w.view.bounds.rightBottom, Color.fromHexString("#05668d"), Color.fromHexString("#028090"));
 
 
-
 			Pen.perform([\stroke, \fill].choose);
 
 			Pen.addRect(Rect(marg,marg,sectWinWidth,sectWinHeight))
@@ -299,7 +298,7 @@ s.doWhenBooted(
 		v6 = UserView(w,Rect(750,(4*marg)+(3*sectWinHeight),sectWinHeight,sectWinHeight));
 		v6.drawFunc_({
 			var myX,myY;
-			var radius = (sectWinHeight/2)-10;
+			var radius = (sectWinHeight/2)-3;
 			Pen.addRect(Rect(0,0,sectWinHeight,sectWinHeight))
 			.fillRadialGradient(((sectWinHeight/2))@((sectWinHeight)),(sectWinHeight/2)@(sectWinHeight),30,200,
 				Color.fromHexString("#05668d"), Color.fromHexString("#78cdd7"))
@@ -335,9 +334,9 @@ s.doWhenBooted(
 				~knobPos[i,0].postln;
 				"qui".postln;
 
-				myX=(((~knobPos[i,0])/width)*sectWinHeight);
+				myX=(((~knobPos[i,0])/(width-10))*(sectWinHeight-3));
 				"quo".postln;
-				myY=(((~knobPos[i,1]/(height-10))*(sectWinHeight/2))+(sectWinHeight/2)-10);
+				myY=(((~knobPos[i,1]/(height-10))*((sectWinHeight/2)-3))+(sectWinHeight/2));
 				"qua".postln;
 				Pen.color_(~knobPos[i,6]);
 				Pen.addArc((myX)@(myY),5,0,2pi);
@@ -609,7 +608,8 @@ s.doWhenBooted(
 			out = LPF.ar(mix, 2000);
 			out = HPF.ar(out, 500);
 			out = FreeVerb.ar(out, 0.1);
-			out = Limiter.ar(out, 0.7);
+			// out = Limiter.ar(out, 0.7);
+			out = Compander.ar(out, out, (-6).dbamp, 1, 1/5, 0.001, 0.2);
 			Out.ar(outBus, out);
 		}).add;
 
@@ -629,24 +629,26 @@ s.doWhenBooted(
 			val = input*inGain;
 			valEf = input*efGain; //*(efGain)*(inGain+0.1);
 			panMain = Pan2.ar(val,angle);
-			panEf = Pan2.ar(valEf,angle);♣
+			panEf = Pan2.ar(valEf,angle);
 			Out.ar(mainOut,panMain);
 			Out.ar(effectOut,panEf);
 		}).add;
 
 		SynthDef(\roomer,{
-			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=0, radius;
-			var input, out,outputL,outputR, rev,yL,yR,zL,zR,
-			roomsize = 100,
+			arg inBus, outBus = 0, dimension=0.2, mix=1.0, amp=0, room=0.8, damp=0.3, radius;
+			var input, out,outputL,outputR,rev,yL,yR,zL,zR;
+			/*roomsize = 100,
 			revtime = 4.85,
 			damping = 0.5,
 			inputbw = 0.8,
 			spread = 10,
 			earlyreflevel = -25,
-			taillevel = -15,
-			maxroomsize = roomsize+1;
+			taillevel = -15+(amp/2),
+			maxroomsize = roomsize+1,*/
+
+
 			input = In.ar(inBus,2);
-			outputL = GVerb.ar(
+			/*outputL = GVerb.ar(
 				input[0],
 				roomsize:roomsize ,
 				revtime: revtime,
@@ -676,7 +678,19 @@ s.doWhenBooted(
 				add: 0
 
 			);
-			out = [outputL,outputR];
+			out = [outputL,outputR];*/
+
+			out = FreeVerb2.ar(
+				input[0],
+				input[1],
+				mix: 1,
+				room: room,
+				damp: damp,
+				mul: 1.0,
+				add: 0.0
+
+			);
+
 			out = BPF.ar(out, 3000)*(amp).dbamp;
 			Out.ar(outBus,out);
 		} ).add;
@@ -704,13 +718,15 @@ s.doWhenBooted(
 		}).add;
 
 		SynthDef(\stereoMaster,{
-			arg inBus,outBus,amp=1, ratio=4;
+			arg inBus, outBus, amp = 10, ratio=4;
 
 			var in = In.ar(inBus,2);
+			in = in*amp.dbamp;
 			//compression
 			in = Compander.ar(in, in, (-10).dbamp, 1, 1/ratio, 0.01, 0.05);
+			in = Limiter.ar(in, 0.8, 0.01);
 
-			Out.ar(outBus,in*amp);
+			Out.ar(outBus,in);
 		}).add;
 		// LABEL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -803,7 +819,7 @@ s.doWhenBooted(
 			{
 				var angle,distance,x,y;
 				angle = ~knobPos[0,2].value.linlin(0,1,-pi/2,pi/2);
-				distance = ~knobPos[0,3].value.linlin(0,1,0,height-10);
+				distance = ~knobPos[0,3].value.linlin(0,1,20,height-10);
 				x = (((distance*((angle).sin))+centerPosX)+elRadius);
 				y = ((((height-10)-(distance*(angle).cos)))+elRadius);
 				~knobPos[0,0] = x;
@@ -1387,49 +1403,49 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.backColor_(Color.white);
 
-		~knobRoom = Knob(w5, Rect(0.7*knobIntraDist,160,knobDim,knobDim))
+		~knobRoom = Knob(w5, Rect(0.7*knobIntraDist,160+15,knobDim,knobDim))
 		.color_(~colors)
-		.value_(100/(300-20))
+		.value_(0.7)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg room;
-			~roomer.set(\roomsize,~knobRoom.value.linlin(0,1,20,300));
+			~roomer.set(\room,~knobRoom.value.linlin(0,1,0,1));
 
 		});
 
-		~knobLabelRoom = StaticText(w5, Rect(0.7*knobIntraDist,125,knobDim,knobDim))
+		~knobLabelRoom = StaticText(w5, Rect(0.7*knobIntraDist,130+10,knobDim,knobDim))
 		.string_("Room")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
 
 
-		~knobDamp = Knob(w5, Rect(5.5*knobIntraDist,160,knobDim,knobDim))
+		~knobDamp = Knob(w5, Rect(5.5*knobIntraDist,160+15,knobDim,knobDim))
 		.color_(~colors)
-		.value_(0.5)
+		.value_(0.3)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg damp;
-			~roomer.set(\damping,~knobDamp.value.linlin(0,1,0,1));
+			~roomer.set(\damp,~knobDamp.value.linlin(0,1,0,1));
 
 		});
-		~knobLabelDamp = StaticText(w5, Rect(5.5*knobIntraDist,125,knobDim,knobDim))
+		~knobLabelDamp = StaticText(w5, Rect(5.5*knobIntraDist,130+10,knobDim,knobDim))
 		.string_("Damp")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
 
 
-		~knobEref = Knob(w5, Rect(0.7*knobIntraDist,240,knobDim,knobDim))
+		/*~knobEref = Knob(w5, Rect(0.7*knobIntraDist,240,knobDim,knobDim))
 		.color_(~colors)
-		.value_(1/3)
+		.value_(0.258)
 		.mode_(\vert)
 		.background_(Color.fromHexString("#78cdd7"))
 		.action_({
 			arg eref;
-			~roomer.set(\earlyreflevel,~knobEref.value.linlin(0,1,-40,5));
+			~roomer.set(\earlyreflevel,~knobEref.value.linlin(0,1,-40,18));
 
 		});
 
@@ -1438,9 +1454,10 @@ s.doWhenBooted(
 		.string_("E.Ref")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
-		.stringColor_(Color.white);
+		.stringColor_(Color.white);*/
 
-		~knobLvl = Knob(w5, Rect(5.5*knobIntraDist,240,knobDim,knobDim))
+		// ~spec = ControlSpec((1/8)*ampdb, 8.ampdb, 'db', units:"dB")
+		~knobLvl = Knob(w5, Rect(knobIntraDist*3.1,240,knobDim,knobDim))
 		.color_(~colors)
 		.value_(0.5)
 		.mode_(\vert)
@@ -1453,7 +1470,7 @@ s.doWhenBooted(
 		//	~roomer.set(\amp, lvl.log10*20);
 		//});
 
-		~knobLabelLvl = StaticText(w5, Rect(5.5*knobIntraDist,205,knobDim,knobDim))
+		~knobLabelLvl = StaticText(w5, Rect(3.1*knobIntraDist,205,knobDim,knobDim))
 		.string_("Lvl")
 		.align_(\center)
 		.font_(Font("arial", 12).boldVariant)
@@ -1467,11 +1484,27 @@ s.doWhenBooted(
 		.stringColor_(Color.white);
 		//.backColor_(Color.white);
 
-		~masterSlider = Slider(w5, Rect(10,327,30,sectWinHeight-28))
+		~masterVolume = Volume.new(s, 0, 2, -90, 6);
+
+		~spec = ControlSpec((3.16*(10**(-5))).ampdb, 2.ampdb, \db, units:"dB");
+		"UNMAP".postln;
+		~spec.unmap(0).postln;
+
+
+		~masterSlider = Slider.new(w5, Rect(10,327,30,sectWinHeight-28))
 		.orientation_(\vertical)
 		.background_(Color.fromHexString("#78cdd7"))
 		.thumbSize_(20)
-		.knobColor_(Color.fromHexString("#78cdd7"));
+		.knobColor_(Color.fromHexString("#78cdd7"))
+		.value_(~spec.unmap(0))
+		.action = {
+			~masterVolume.volume = ~spec.map(~masterSlider.value);
+		};
+
+
+		// "mastervalue".postln;
+		// ~masterSlider.value.postln;
+		// ~masterVolume.volume.postln;
 		//.mouseOverAction_
 		/*
 		.action_({
@@ -1488,10 +1521,10 @@ s.doWhenBooted(
 		~effectBus =Bus.audio(s,2);
 		{~roomer= Synth.tail(nil,\roomer,[\inBus,~effectBus,\outBus,0])}.defer(0.3);
 		{~stereoMaster = Synth.after(~roomer,\stereoMaster,[\inBus,0,\outBus,0,\amp,1])}.defer(0.4);
-		{Synth.after(~fireSynth,\scoping, [\buffy, ~bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.1);
-		{Synth.after(~wolfSynth,\scoping, [\buffy, ~bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.1);
-		{Synth.after(~frogSynth,\scoping, [\buffy, ~bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.1);
-		{Synth.after(~stepSynth,\scoping, [\buffy, ~bufStep.bufnum, \bus, ~stepBus,\amp,8])}.defer(0.1);
+		{Synth.after(~fireSynth,\scoping, [\buffy, ~bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.18);
+		{Synth.after(~wolfSynth,\scoping, [\buffy, ~bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.18);
+		{Synth.after(~frogSynth,\scoping, [\buffy, ~bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.18);
+		{Synth.after(~stepSynth,\scoping, [\buffy, ~bufStep.bufnum, \bus, ~stepBus,\amp,8])}.defer(0.18);
 
 		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
 		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
@@ -1639,12 +1672,12 @@ s.doWhenBooted(
 
 		~wpFunc = {
 			//.background_(Color.rand)
-			~wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
+			~wp = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight+18), false)
 			.front
 			.alwaysOnTop_(false)
 			.visible_(false)
 			.drawFunc_({});
-			v = UserView(~wp,Rect(0,0,width,height));
+			v = UserView(~wp,Rect(0,0,width,height+18));
 
 			"drawFunc".postln;
 
@@ -1656,7 +1689,7 @@ s.doWhenBooted(
 				.color_(Color.white)
 				.fill
 				//i1.tileInRect(Rect(marg,marg,120,120),nil,2,1.0);
-				.addArc((panWinWidth/2)@(panWinHeight),(20),pi,2pi)
+				.addArc((panWinWidth/2)@(panWinHeight),25,pi,2pi)
 
 				.fill
 				.addArc((panWinWidth/2)@(panWinHeight),(height-10),pi,2pi)
@@ -1737,7 +1770,7 @@ s.doWhenBooted(
 					if(distance>=1.linlin(0,1,0,height-10),{
 						distance = 1.value.linlin(0,1,0,height-10);
 						x = (((distance*((angle).sin))+centerPosX));
-						if(y>height,{
+						if(y>=height,{
 							y=height;
 						},{
 							y = (((distance-(distance*(angle).cos))));
@@ -1809,5 +1842,6 @@ s.doWhenBooted(
 });
 )
 
+s.plotTree
 ~wp.isClosed.postln
 ~wp.postln
