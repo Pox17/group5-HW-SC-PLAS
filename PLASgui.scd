@@ -11,10 +11,15 @@ s.plotTree;
 ~bufWolf;
 
 
-if(s.hasBooted != true,{s.boot});
+if(s.hasBooted != true,{
+	s.boot;
+	"STARTING THE SERVER...".postln;
+});
+"STARTING THE SYSTEM...".postln;
 s.freeAll;
 s.doWhenBooted(
 	{
+
 		//VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -32,7 +37,7 @@ s.doWhenBooted(
 		winWidth = 900,
 		winHeight = 650,
 		winUpDown = 50,
-		winRL = 600,
+		winRL = 200,
 
 		panWinRL = 10,
 		panWinUpDown = 50,
@@ -62,7 +67,7 @@ s.doWhenBooted(
 
 		//WINDOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-		elRadius = 8,
+		elRadius = 17,
 		xStart=1,
 		yStart=1,
 		height=panWinHeight,
@@ -137,6 +142,7 @@ s.doWhenBooted(
 			~frogBus.free;
 			~stepBus.free;
 			~updateIndicator.stop;
+			"SYSTEM STOPPED...".postln;
 		})
 		/*.acceptsMouseOver_(true)
 		.mouseOverAction_({
@@ -331,13 +337,13 @@ s.doWhenBooted(
 			//~knobPos[0,0].postln;
 			for(0,numOfPoints-1,{
 				arg i;
-				~knobPos[i,0].postln;
-				"qui".postln;
+				//~knobPos[i,0].postln;
+				//"qui".postln;
 
 				myX=(((~knobPos[i,0])/(width-10))*(sectWinHeight-3));
-				"quo".postln;
+				//"quo".postln;
 				myY=(((~knobPos[i,1]/(height-10))*((sectWinHeight/2)-3))+(sectWinHeight/2));
-				"qua".postln;
+				//"qua".postln;
 				Pen.color_(~knobPos[i,6]);
 				Pen.addArc((myX)@(myY),5,0,2pi);
 				Pen.fillStroke;
@@ -619,7 +625,7 @@ s.doWhenBooted(
 
 			// inGain = (0-radius*2).exp;
 			dBatt = 20 * (1/(radius.linlin(0,1,1,30))).log10;
-			dBatt.postln;
+			//dBatt.postln;
 			inGain = dbStart+dBatt;
 			inGain = inGain.dbamp;
 			efGain = (0.1+(0.1*inGain));
@@ -649,33 +655,33 @@ s.doWhenBooted(
 
 			input = In.ar(inBus,2);
 			/*outputL = GVerb.ar(
-				input[0],
-				roomsize:roomsize ,
-				revtime: revtime,
-				damping: damping,
-				inputbw: inputbw,
-				spread: spread,
-				drylevel: 0.dbamp,
-				earlyreflevel: earlyreflevel.dbamp,
-				taillevel: taillevel.dbamp,
-				/*maxroomsize: maxroomsize,*/
-				mul: 1,
-				add: 0
+			input[0],
+			roomsize:roomsize ,
+			revtime: revtime,
+			damping: damping,
+			inputbw: inputbw,
+			spread: spread,
+			drylevel: 0.dbamp,
+			earlyreflevel: earlyreflevel.dbamp,
+			taillevel: taillevel.dbamp,
+			/*maxroomsize: maxroomsize,*/
+			mul: 1,
+			add: 0
 
 			);
 			outputR = GVerb.ar(
-				input[1],
-				roomsize: roomsize,
-				revtime: revtime,
-				damping: damping,
-				inputbw: inputbw,
-				spread: spread,
-				drylevel: 0.dbamp,
-				earlyreflevel: earlyreflevel.dbamp,
-				taillevel: taillevel.dbamp,
-				/*maxroomsize: maxroomsize,*/
-				mul: 1,
-				add: 0
+			input[1],
+			roomsize: roomsize,
+			revtime: revtime,
+			damping: damping,
+			inputbw: inputbw,
+			spread: spread,
+			drylevel: 0.dbamp,
+			earlyreflevel: earlyreflevel.dbamp,
+			taillevel: taillevel.dbamp,
+			/*maxroomsize: maxroomsize,*/
+			mul: 1,
+			add: 0
 
 			);
 			out = [outputL,outputR];*/
@@ -829,7 +835,7 @@ s.doWhenBooted(
 				v.refresh;
 				v6.refresh;
 		});
-		"passed1?".postln;
+		//"passed1?".postln;
 		~b1 = Button.new(w1, Rect(48*knobIntraDist,40,60,knobDim))
 		.states_([
 			["PLAY", Color.black, Color.fromHexString("#78cdd7")],
@@ -837,16 +843,16 @@ s.doWhenBooted(
 		])
 		.action_({ arg b,sum;
 			QtGUI.palette = if(b.value == 0);
-			"aqi".postln;
+			//"aqi".postln;
 			if(b.value == 0,
 				{
 					~fireSynth.run(false);
-					postln("firesynth true");
+					//postln("firesynth true");
 
 				},
 				{
 					~fireSynth.run(true);
-					postln("firesynth false");
+					//postln("firesynth false");
 
 				}
 			);
@@ -857,9 +863,9 @@ s.doWhenBooted(
 				~b5.value_(0)
 			});
 		});
-		"passed?".postln;
+
 		//WOLF%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		"passed?".postln;
+
 
 		~wolfBus = Bus.audio(s,1);
 		~wolfSynth = Synth.newPaused(\wolf,[\outBus,~wolfBus]);
@@ -1015,12 +1021,12 @@ s.doWhenBooted(
 			if(b.value == 0,
 				{
 					~wolfSynth.run(false);
-					postln("wolfsynth true");
+					//postln("wolfsynth true");
 
 				},
 				{
 					~wolfSynth.run(true);
-					postln("wolfsynth false");
+					//postln("wolfsynth false");
 
 				}
 			);
@@ -1198,11 +1204,11 @@ s.doWhenBooted(
 			if(b.value == 0,
 				{
 					~frogSynth.run(false);
-					postln("frogsynth true");
+					//postln("frogsynth true");
 				},
 				{
 					~frogSynth.run(true);
-					postln("frogsynth false");
+					//postln("frogsynth false");
 				}
 			);
 			sum = ~b1.value+~b2.value+~b3.value+~b4.value;
@@ -1437,26 +1443,6 @@ s.doWhenBooted(
 		.font_(Font("arial", 12).boldVariant)
 		.stringColor_(Color.white);
 
-
-		/*~knobEref = Knob(w5, Rect(0.7*knobIntraDist,240,knobDim,knobDim))
-		.color_(~colors)
-		.value_(0.258)
-		.mode_(\vert)
-		.background_(Color.fromHexString("#78cdd7"))
-		.action_({
-			arg eref;
-			~roomer.set(\earlyreflevel,~knobEref.value.linlin(0,1,-40,18));
-
-		});
-
-
-		~knobLabelEref = StaticText(w5, Rect(0.7*knobIntraDist,205,knobDim,knobDim))
-		.string_("E.Ref")
-		.align_(\center)
-		.font_(Font("arial", 12).boldVariant)
-		.stringColor_(Color.white);*/
-
-		// ~spec = ControlSpec((1/8)*ampdb, 8.ampdb, 'db', units:"dB")
 		~knobLvl = Knob(w5, Rect(knobIntraDist*3.1,240,knobDim,knobDim))
 		.color_(~colors)
 		.value_(0.5)
@@ -1466,9 +1452,6 @@ s.doWhenBooted(
 			arg lvl;
 			~roomer.set(\amp,~knobLvl.value.linlin(0,1,-18,18));
 		});
-
-		//	~roomer.set(\amp, lvl.log10*20);
-		//});
 
 		~knobLabelLvl = StaticText(w5, Rect(3.1*knobIntraDist,205,knobDim,knobDim))
 		.string_("Lvl")
@@ -1487,8 +1470,6 @@ s.doWhenBooted(
 		~masterVolume = Volume.new(s, 0, 2, -90, 6);
 
 		~spec = ControlSpec((3.16*(10**(-5))).ampdb, 2.ampdb, \db, units:"dB");
-		"UNMAP".postln;
-		~spec.unmap(0).postln;
 
 
 		~masterSlider = Slider.new(w5, Rect(10,327,30,sectWinHeight-28))
@@ -1502,35 +1483,28 @@ s.doWhenBooted(
 		};
 
 
-		// "mastervalue".postln;
-		// ~masterSlider.value.postln;
-		// ~masterVolume.volume.postln;
-		//.mouseOverAction_
-		/*
-		.action_({
-
-		});
-		*/
-
-		//{
-		//SendReply.kr(imp, '/levels', [Amplitude.kr(colum), K2A.ar(Peak.ar(colum, delimp).lag(0, 3))]);
-		//ampL = Amplitude.ar(0);
-		//ampR = Amplitude.ar(1);
 
 
+		//master and reverb bus and Synths
 		~effectBus =Bus.audio(s,2);
+
 		{~roomer= Synth.tail(nil,\roomer,[\inBus,~effectBus,\outBus,0])}.defer(0.3);
 		{~stereoMaster = Synth.after(~roomer,\stereoMaster,[\inBus,0,\outBus,0,\amp,1])}.defer(0.4);
+
+		//oscilloscope creation
 		{Synth.after(~fireSynth,\scoping, [\buffy, ~bufFire.bufnum, \bus, ~fireBus,\amp,8])}.defer(0.18);
 		{Synth.after(~wolfSynth,\scoping, [\buffy, ~bufWolf.bufnum, \bus, ~wolfBus,\amp,8])}.defer(0.18);
 		{Synth.after(~frogSynth,\scoping, [\buffy, ~bufFrog.bufnum, \bus, ~frogBus,\amp,8])}.defer(0.18);
 		{Synth.after(~stepSynth,\scoping, [\buffy, ~bufStep.bufnum, \bus, ~stepBus,\amp,8])}.defer(0.18);
 
-		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
+		//positioner creation
 		{~knobPos[0,5] = Synth.after(~fireSynth,\positioner, [\inBus, ~fireBus,\mainOut,0,\angle,~knobPos[0,2].value.linlin(0,1,-1,1),\radius,~knobPos[0,3].value,\effectOut,~effectBus])}.defer(0.2);
 		{~knobPos[1,5] = Synth.after(~wolfSynth,\positioner, [\inBus, ~wolfBus,\mainOut,0,\angle,~knobPos[1,2].value.linlin(0,1,-1,1),\radius,~knobPos[1,3].value,\effectOut,~effectBus])}.defer(0.2);
 		{~knobPos[2,5] = Synth.after(~frogSynth,\positioner, [\inBus, ~frogBus,\mainOut,0,\angle,~knobPos[2,2].value.linlin(0,1,-1,1),\radius,~knobPos[2,3].value,\effectOut,~effectBus])}.defer(0.2);
 		{~knobPos[3,5] = Synth.after(~stepSynth,\positioner, [\inBus, ~stepBus,\mainOut,0,\angle,~knobPos[3,2].value.linlin(0,1,-1,1),\radius,~knobPos[3,3].value,\effectOut,~effectBus])}.defer(0.2);
+
+
+		//creation of main stereo meters
 
 		~meterL = LevelIndicator.new(w5, Rect(50,327,30,sectWinHeight-30))
 		.background_(Color.fromHexString("#028090"))
@@ -1556,6 +1530,8 @@ s.doWhenBooted(
 		.style_(\led)
 		.numSteps_(20);
 
+		//control bus to send periodic amplitude level to the stereo meters
+
 		~krBus = Bus.control(s,2);
 		{~stereoMonitor = Synth.after(~stereoMaster,\stereoMonitor,[\inBus,0,\krBus,~krBus]);
 			~updateIndicator = fork{loop{
@@ -1573,92 +1549,18 @@ s.doWhenBooted(
 		};}.defer(0.5);
 
 
-		//arg inBus=0, mainOut=0, effectOut, angle = 0, radius =0 ;
-		//{h = Synth(\s1, [\bus, 5,])}.defer(0.2)
-
-		//{ |out, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
 
 
-		/*
-		f = SoundFile.new;
-		f.openRead("C:/Users/Alberto/Documents/università/MAGISTRALE/corsi/CM-LANGUAGE AND SYSTEMS/progetto/group5-HW-SC-PLAS/1.wav");
-		~soundview = SoundFileView(w1, Rect(350,30, 150, 90))
-		.soundfile = f;
-
-		~soundview.read()
-		.timeCursorOn_(false)
-		.timeCursorColor_(Color.red)
-		.timeCursorPosition_(2050)
-		.drawsWaveForm_(true)
-		.gridOn_(false)
-		.gridResolution = 0.01;
-		*/
-		//SLIDER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-		/*
-		~slider = Slider(w, Rect(50,50,150,20))
-		.background_(Color.rand)
-		.thumbSize_(50)
-		.knobColor_(Color.rand)
-		//.mouseOverAction_
-		.action_({
-		arg x;
-		var expctrl;
-		expctrl = x.value.linexp(0,1,50,1000);
-		s.set(\freq, expctrl);
-		~numberbox.value_(x.value.linexp(0,1,50,1000));
-		});
-
-		~rangeslider = RangeSlider(w, Rect(50,30,150,20))
-		.background_(Color.rand)
-		.knobColor_(Color.rand)
-		//.mouseOverAction_
-		.action_({
-
-		});
-
-		*/
-
-		//ALTRO-----------------------
-
-		/*
-		~obj= MultiSliderView(w, Rect(100,100,90,90))
-		.size_(4);
-
-		~obj1= Slider2D(w, Rect(200,150,90,90))
-		.background_(Color.green)
-		.knobColor_(Color.green)
-		.setXY(0.1, 0.1)
-		.activex_()
-		.activey_
-		.action_({
-		|sl|
-		s.set(\freq, sl.x,\amp,sl.y);
-		});
-		*/
-
-		//f = SoundFile.new;
-		//f.openRead(Platform.C +/+ "/Desktop/1.wav");
-		//~soundview = SoundFileView(w, Rect(10,250, 250, 90))
-		//.soundfile = f;
-
-		//~soundview.read(0, f.numFrames)
-		//.timeCursorOn = true;
-		//.timeCursorColor = Color.red
-		//.timeCursorPosition = 2050
-		//.drawsWaveForm = true
-		//.gridOn = true;
-		//.gridResolution = 0.2;
 
 		//panner---------------------------------------------------------------------------
 		for (0, (numOfPoints-1), {
 			arg i;
 			var angle, distance;
-			"cazzi".postln;
+
 			angle = ~knobPos[i,2].value.linlin(0,1,(-pi/2),(pi/2));
-			"amari".postln;
+
 			distance = ~knobPos[i,3].value.linlin(0,1,0,(height-10));
-			"ciao".postln;
+
 			x = (((distance*((angle).sin))+centerPosX));
 			y = ((((height-10)-(distance*(angle).cos))));
 			~knobPos[i,0] = x;
@@ -1667,8 +1569,8 @@ s.doWhenBooted(
 		);
 
 
-		~angPos = Array2D.new(numOfPoints,2);
 
+		//function to create the panner view
 
 		~wpFunc = {
 			//.background_(Color.rand)
@@ -1679,8 +1581,8 @@ s.doWhenBooted(
 			.drawFunc_({});
 			v = UserView(~wp,Rect(0,0,width,height+18));
 
-			"drawFunc".postln;
 
+			//function to draw the elements in the panner view
 			v.drawFunc = {
 				Pen.addRect(~wp.view.bounds.insetBy(0))
 				.fillRadialGradient( (panWinWidth/2)@(panWinHeight),(panWinWidth/2)@(panWinHeight),80,600,
@@ -1705,40 +1607,25 @@ s.doWhenBooted(
 				.alpha_(0.2)
 				.stroke;
 
-				"CIAO".postln;
+
 				for (0, (numOfPoints-1), {
 					arg i;
 					var angle, distance,angle01,distance01;
-					//i.postln;
-					//pos.at(i,0).postln;
+
 					Pen.fillColor = Color.black;
 					Pen.strokeColor = Color.white;
-					//"CIAO1".postln;
-					~knobPos.postln;
-					//Pen.addArc((pos.at(i,0))@(pos.at(i,1)),elRadius, 0,2pi);
+
+
 					Pen.drawImage( ((~knobPos[i,0])-18)@((~knobPos[i,1])-18), ~knobPos[i,4], operation: 'sourceOver', opacity:1);
-					~knobPos[0,0].postln;
-					//"CIAO2".postln;
-					//angle = ((~knobPos[i,0]-centerPosX)/(~knobPos[i,1]-centerPosY).abs).atan;
-					//angle01 = angle/(pi/2);
-					/*
-					distance = (((~knobPos[i,0]-centerPosX).squared)+((~knobPos[i,1]-centerPosY).squared)).sqrt;
-					distance01 = distance/height;
-					"distance01".postln;
-					distance01.postln;
-					"angle01".postln;
-					angle01.postln;
-					~angPos[i,0] = distance01;
-					~angPos[i,1] = angle01;
-					*/
+
 					Pen.fillStroke;
 				});
 			};
 
-			"mouseDownAction".postln;
+			//function to select the element to move through the mouse pointer
 
 			v.mouseDownAction = { arg view, x,y, m;
-				//m.postln;
+
 				([256, 0].includes(m)).if{ // restrict to no modifier
 					//value = (x).linlin(0,v.bounds.width,0,1); v.doAction};
 					var found = false;
@@ -1750,11 +1637,12 @@ s.doWhenBooted(
 						});
 					});
 					if(found!=true,{selPos= (-1)});
-					selPos.postln
+
 				};
 			};
 
-			"mouseMoveAction".postln;
+
+			//function to control the movement of audio elements inside the panner view
 
 			v.mouseMoveAction = {
 				arg view, x,y, m;
@@ -1777,39 +1665,12 @@ s.doWhenBooted(
 						})
 
 					});
-
-					angle.postln;
-					/*
-					distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
-					angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
-					if(y>= (h-elRadius), {
-					y=h;
-					if(x<=(elRadius),{
-					x= 10;
-					});
-					if(x>=(width-elRadius),{
-					x= (width-10);
-					});
-					},{
-					if((distance+elRadius)>=(h), {
-					if(angle<0,{x = (((h*((angle).sin))+centerPosX)+elRadius);});
-					if(angle>0,{x = (((h*((angle).sin))+centerPosX)-elRadius);});
-					//x = (((h*((angle).sin))+centerPosX)+elRadius);
-					y = (((h-(h*(angle).cos)))+elRadius);
-					});
-					});
-					distance = (((((x-centerPosX).squared)+(y-centerPosY).squared).sqrt));
-					angle = (((x-centerPosX)/(y-centerPosY).abs).atan);
-					*/
 					~knobPos[selPos,0] =x;
 					~knobPos[selPos,1] =y;
 					~knobPos[selPos,2].value_(angle.linlin(-pi/2,pi/2,0,1));
 					~knobPos[selPos,3].value_(distance.linlin(0,height-10,0,1));
 					~knobPos[selPos,5].set(\angle,~knobPos[selPos,2].value.linlin(0,1,-1,1));
 					~knobPos[selPos,5].set(\radius,~knobPos[selPos,3].value);
-					//p.set(\angle,~angPos[0,1]);
-					//if((~angPos[0,0]>=1),{~angPos[0,0] = 1});
-					//p.set(\radius,~angPos[0,0]);
 
 					v.refresh;
 					v6.refresh;
@@ -1819,29 +1680,15 @@ s.doWhenBooted(
 
 			};
 
-			"wpFuncEnd".postln;
+
 
 			~wp.onClose_({
 				~wpBool=false;
 			});
 
-			// ~wpBool=true;
 		}.defer(0.1);
 
-		~wpBool.postln;
-
-		/*~wp.addToOnClose_({
-		~wpNew = Window.new("spanner", Rect(panWinRL,panWinUpDown,panWinWidth,panWinHeight), false)
-		.front
-		.alwaysOnTop_(false)
-		.visible_(false)
-		.drawFunc_({});
-		})*/
-
 		~wpFunc.value;
+		"SYSTEM STARTED...".postln;
 });
 )
-
-s.plotTree
-~wp.isClosed.postln
-~wp.postln
