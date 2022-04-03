@@ -1,4 +1,4 @@
-# **A new Title**
+# **GRANULANDS**
 
 Group 5 PLAS
 
@@ -6,7 +6,7 @@ Project developed in SuperCollider environment for the course of Computer Music 
 
 The project consists of a Granular Synthesizer that generates foley sounds
 
-- [**A new Title**](#a-new-title)
+- [**GRANULANDS**](#granulands)
   - [Folder Structure](#folder-structure)
   - [User Guide](#user-guide)
   - [Notes](#notes)
@@ -30,6 +30,8 @@ The project consists of a Granular Synthesizer that generates foley sounds
  ┃ ┗ 📜wolf.png
  ┗ 📜PLASgui.scd
 ```
+
+
 ## User Guide
 
 In order to test and use the synthetizer: 
