@@ -1,8 +1,3 @@
-s.boot;
-
-
-
-s.plotTree;
 (
 
 ~bufFire;
@@ -36,7 +31,7 @@ s.doWhenBooted(
 
 		winWidth = 900,
 		winHeight = 650,
-		winUpDown = 50,
+		winUpDown = 80,
 		winRL = 200,
 
 		panWinRL = 10,
