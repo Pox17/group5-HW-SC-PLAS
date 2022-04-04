@@ -8,6 +8,7 @@
   - [Usage](#usage)
   - [Folder Structure](#folder-structure)
   - [Notes](#notes)
+  - [Components](#components)
 
 ## Project Description
 
@@ -99,4 +100,11 @@ The project repository contains one supercollider file that contains the code to
 ## Notes
 
 * The system has been built and tested on Windows 10 OS machines and using it on MAC OS could lead to minor GUI problems. It is suggested to close the main window and restart the system in order to fix them
+
+## Components 
+Alberto Doimo (alberto.doimo@mail.polimi.it) </p>
+Paolo Ostan (paolo.ostan@mail.polimi.it) </p>
+
+Stefano Donà (stefano2.dona@mail.polimi.it) </p>
+Lorenzo Curcio (lorenzo.curcio@mail.polimi.it) </p>
 
