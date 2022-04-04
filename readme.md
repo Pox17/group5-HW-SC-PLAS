@@ -46,7 +46,7 @@ In order to test and use the synthesizer:
 
   ![](./images/masterSection.PNG)
 
-  * The **PLAYALL** button allows to playall the sounds together and to stop some or all them if they are playing.
+  * The **PLAYALL** button allows to play all the sounds together and to stop some or all them if they are playing.
   * ![](./images/playAllBTN.PNG)
 
   * The reverb controls allow the user to modify the parameters of the reverb effect applied to the master channel
