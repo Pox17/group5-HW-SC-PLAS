@@ -406,9 +406,21 @@ s.doWhenBooted(
 		//SYNTHDEFS
 
 		// ------STEPS------ //
-		SynthDef(\PassettiNeve, { |outBus, gate = 1, amp = 1, envbuf, hpfreq = 2000,speed = 1|
+		SynthDef(\PassettiNeve, {
+			// Argument declaration
+			arg outBus,
+			gate = 1,
+			amp = 1,
+			envbuf,
+			hpfreq = 2000, // parameter that control the snow/dirt ratio
+			speed = 1; //speed of steps
+
+			// Variable declaration
 			var center,sig2,hpf,verb,shf,lpf, sig, a;
+
 			a = Buffer.readChannel(s,~srcPath,channels:[0]);
+
+			// steps granular synth
 			sig2 = GrainBuf.ar(
 				numChannels: 1,
 				trigger: Impulse.ar(speed+LFNoise1.ar((0.7*speed)).bipolar(speed/4)),
@@ -419,14 +431,17 @@ s.doWhenBooted(
 				interp: 2,
 				pan: 0
 			);
-			sig = sig2 * BrownNoise.ar(1,0);
-			verb = FreeVerb.ar(sig,0.2);
-			shf = PitchShift.ar(verb,0.2,0.2);
-			// center = Pan2.ar(shf,0,1);
+
+			sig = sig2 * BrownNoise.ar(1,0); // multiply the signal by brown noise for crispiness
+			verb = FreeVerb.ar(sig,0.2); // reverbering the signal
+			shf = PitchShift.ar(verb,0.2,0.2); // pitch shifting the signal
+			// filtering signal
 			hpf = HPF.ar(shf,hpfreq);
 			lpf = LPF.ar(hpf,6000)*6;
-
+			// regulating output amplitude in order to maintain quasi-constant the volume
+			// though the frequency content raises
 			lpf = lpf*(hpfreq.log10-2000.log10).exp;
+
 			Out.ar(outBus,lpf);
 		}).add;
 
