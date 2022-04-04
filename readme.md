@@ -31,7 +31,7 @@ In order to test and use the synthesizer:
 1. The <em>GUI</em> is divided in four channelstrips, one for each sound. 
   ![](./images/fireGUIEx.png)
    * On the left side of the channel the user can find the knobs to modify the parameters affecting the generation of the sound.
-   * ![](./images/FireParams.png)
+   * ![image info](./images/FireParams.png)
    
    * The oscilloscopes allow to monitor the output of each channel.
    * ![](./images/oscilloscope.PNG) 
