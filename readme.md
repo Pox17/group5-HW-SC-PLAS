@@ -26,8 +26,39 @@ In order to test and use the synthesizer:
 
 
 ## Usage
+<img src="./images/Granulands.png"/>
 
-The 
+1. The <em>GUI</em> is divided in four channelstrips, one for each sound. 
+  ![](./images/fireGUIEx.png)
+   * On the left side of the channel the user can find the knobs to modify the parameters affecting the generation of the sound.
+   * ![](./images/FireParams.png)
+   
+   * The oscilloscopes allow to monitor the output of each channel.
+   * ![](./images/oscilloscope.PNG) 
+
+   * Pan and distance knobs allow to control the position of the sounds in the stereo space.
+   * ![](./images/pan%26distance.PNG)
+
+   * The play button allows to select the single sound to be played 
+   * ![](./images/playButton.PNG)
+  
+2. The master section allows to control the parameters of the master channel and all the sounds generated.
+
+  ![](./images/masterSection.PNG)
+
+  * The **PLAYALL** button allows to playall the sounds together and to stop some or all them if they are playing.
+  * ![](./images/playAllBTN.PNG)
+
+  * The reverb controls allow the user to modify the parameters of the reverb effect applied to the master channel
+  * ![](./images/reverbSec.PNG)
+  * The Master Volume section allows to visualize the output level of the main signal
+  * ![](./images/masterVolume.PNG)
+
+3. The panner section is composed of two elements: 
+   * A little panner view in the main window allows  to visualize the changes made on the sound spatial position, and allows to open the main panner window if clicked. 
+   * ![](/images/littlePanner.PNG)
+   * The main panner window allows the user to visualize the spatial position of the sounds and to move them inside the stereo spectrum by dragging them on the window.
+   * ![](./images/Panner.png)
 
 ## Folder Structure
 
